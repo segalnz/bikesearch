@@ -68,12 +68,13 @@ and DIY/diagnostic caveats. The dashboard exposes this under **DeepSeek research
 guidance**. These are advisory checks, not independent web verification: this API
 integration has no browsing tool. Memory-based manufacturer specifications or
 manual availability never automatically satisfy a mandatory requirement. Quoted
-advert passages must exactly match the supplied advert; malformed/unsupported
-responses are discarded. AI cannot override deterministic exclusions.
+advert passages must exactly match the supplied advert; unsupported quotations
+are removed from the advisory, and malformed candidate responses are isolated. AI cannot override deterministic exclusions.
 
 At most 16 calls and 180 cumulative API seconds are allowed per scan. Unchanged advert/criteria/model combinations
 reuse `/var/lib/motorcycle-monitor/ai-cache`; changed adverts or preferences get
-new reviews. API errors stop further review calls for that scan, leave collection
+new reviews. Credential/API connection errors stop further review calls for that scan; a
+malformed candidate response affects only that candidate. Both leave collection
 running and keep unknown requirements marked for review. Requests use a 60-second
 timeout and bounded input/output. Dry-runs can call the paid API but do not write
 its disk cache. Set `llm.enabled: false` to disable cloud calls.

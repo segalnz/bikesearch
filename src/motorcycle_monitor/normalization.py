@@ -52,16 +52,22 @@ def mileage(value: object, unit: str = "km") -> int | None:
 
 def safe_url(url: str, allowed_hosts: list[str] | tuple[str, ...]) -> str:
     parts = urlsplit(url)
+    try:
+        port = parts.port
+    except ValueError:
+        raise ValueError("Unsafe URL port") from None
     if (
         parts.scheme not in {"http", "https"}
         or not parts.hostname
         or parts.username
         or parts.password
-        or parts.port not in {None, 80, 443}
+        or port not in {None, 80, 443}
         or parts.hostname.lower() not in {host.lower() for host in allowed_hosts}
         or any(ord(c) < 32 for c in url)
     ):
-        raise ValueError(f"Unsafe or unconfigured URL: {url!r}")
+        raise ValueError(
+            "Unsafe or unconfigured URL; credentials, scheme, port or host rejected"
+        )
     return url  # Exact original direct link is retained.
 
 

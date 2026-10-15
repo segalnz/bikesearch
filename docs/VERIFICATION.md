@@ -2,14 +2,14 @@
 
 ## Broad search and showcase — 16 October 2026
 
-- 175 offline tests pass under Python 3.12; Ruff lint/format and JavaScript syntax checks pass.
+- 177 offline tests pass under Python 3.12; Ruff lint/format and JavaScript syntax checks pass.
 - All-model criteria validate, including strict wet-weight preference under 210 kg, 225 kg maximum, ABS, non-LAMS, mileage/year/price and review of missing specifications.
 - Independent inventory extraction was exercised against live public Courtesy, Maidstone, Langlands, THS Moto, Colemans, Cooks Honda and Turners pages. Counts are acquisition checks, not claims of complete national stock.
 - The supplied DeepSeek credential authenticated successfully. The available model list was checked; one non-thinking JSON advisory review succeeded using `deepseek-flash`. No credential values were displayed.
 - Brave/Tavily contracts are tested with mocked responses; live indexed API execution needs a separate provider credential. Some automated public engine probes returned challenges/rate limits; ordinary user browsing was not tested or claimed to be blocked.
 - Desktop and 390 px mobile offline demo checks verified candidate/match/review filters, search, fictional-data notice, no JavaScript errors and no horizontal overflow. The README screenshot contains fictional inventory only.
 - Publication guard and deployment-archive checks pass; keys, environment files, databases and local profiles are excluded. Mixed local credentials are parsed by service type, so GitHub access never transfers to the LXC.
-- CI is configured for Python 3.11, 3.12 and 3.13 with pinned GitHub Action commits and read-only repository permissions. CI results are only available after publication.
+- CI is configured for Python 3.11, 3.12 and 3.13 with pinned GitHub Action commits and read-only repository permissions. Published CI passed on all three versions for commit `3ac0502`. Subsequent changes are checked again before completion.
 
 Earlier checks below document the narrower versions; their counts and deployment state are historical.
 

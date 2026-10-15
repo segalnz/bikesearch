@@ -27,3 +27,14 @@ def test_mixed_credentials_load_only_requested_key(tmp_path):
     path.write_text("DeepSeek\n" + deepseek + "\nGitHub\n" + github)
     assert credential("DEEPSEEK_API_KEY", str(path)) == deepseek
     assert credential("GITHUB_TOKEN", str(path)) == github
+
+
+def test_invalid_url_does_not_echo_embedded_credentials():
+    import pytest
+
+    from motorcycle_monitor.normalization import safe_url
+
+    password = "private-example-password"
+    with pytest.raises(ValueError) as error:
+        safe_url("https://user:" + password + "@dealer.co.nz/bike", ["dealer.co.nz"])
+    assert password not in str(error.value)
