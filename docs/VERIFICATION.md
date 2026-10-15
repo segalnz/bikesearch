@@ -2,7 +2,7 @@
 
 ## Broad search and showcase — 16 October 2026
 
-- 177 offline tests pass under Python 3.12; Ruff lint/format and JavaScript syntax checks pass.
+- 178 offline tests pass under Python 3.12; Ruff lint/format and JavaScript syntax checks pass.
 - All-model criteria validate, including strict wet-weight preference under 210 kg, 225 kg maximum, ABS, non-LAMS, mileage/year/price and review of missing specifications.
 - Independent inventory extraction was exercised against live public Courtesy, Maidstone, Langlands, THS Moto, Colemans, Cooks Honda and Turners pages. Counts are acquisition checks, not claims of complete national stock.
 - The supplied DeepSeek credential authenticated successfully. The available model list was checked; one non-thinking JSON advisory review succeeded using `deepseek-flash`. No credential values were displayed.

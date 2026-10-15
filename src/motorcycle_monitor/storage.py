@@ -661,7 +661,7 @@ class Store:
             "runs": [
                 dict(row) | {"details": json.loads(row["details"])}
                 for row in self.db.execute(
-                    "SELECT * FROM collection_runs ORDER BY id DESC LIMIT 10"
+                    "SELECT * FROM collection_runs WHERE id IN (SELECT MAX(id) FROM collection_runs GROUP BY adapter) ORDER BY id DESC"
                 )
             ],
             "possible_duplicates": [

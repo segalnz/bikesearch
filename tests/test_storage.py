@@ -379,3 +379,19 @@ def test_rejected_disappearance_does_not_notify(store, bike, config, monkeypatch
         store.ingest([], config, "trademe")
     assert store.all_listings()[0]["listing_status"] == "UNKNOWN"
     assert events(store) == []
+
+
+def test_health_retains_latest_result_for_every_source(store):
+    for number in range(12):
+        store.record_run(f"source-{number}", "2026-10-16T00:00:00+00:00", "SUCCESS", {})
+    store.record_run(
+        "source-0", "2026-10-16T01:00:00+00:00", "ERROR", {"error": "blocked"}
+    )
+    runs = store.status()["runs"]
+    assert len(runs) == 12
+    assert {row["adapter"] for row in runs} == {
+        f"source-{number}" for number in range(12)
+    }
+    assert (
+        next(row for row in runs if row["adapter"] == "source-0")["outcome"] == "ERROR"
+    )
