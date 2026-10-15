@@ -7,7 +7,7 @@ from urllib.parse import urljoin, urlsplit
 from bs4 import BeautifulSoup
 
 from .filtering import classify
-from .normalization import mileage, money, safe_url
+from .normalization import canonical_url, mileage, money, safe_url
 from .parsers import ParseError, decorate, jsonld
 from .schema import Listing
 
@@ -81,7 +81,7 @@ def visible_listing(node, url, source, options, *, title=None):
     }
     listing = Listing(
         source,
-        hashlib.sha256(url.encode()).hexdigest()[:20],
+        hashlib.sha256(canonical_url(url).encode()).hexdigest()[:20],
         url,
         title[:300],
         description=text[:24000],

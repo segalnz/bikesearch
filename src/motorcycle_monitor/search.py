@@ -1,5 +1,6 @@
 """Optional indexed-web-search adapters; direct inventories need no search API."""
 
+import hashlib
 import ipaddress
 import socket
 import time
@@ -7,7 +8,7 @@ from urllib.parse import urlsplit
 
 import httpx
 
-from .normalization import safe_url
+from .normalization import canonical_url, safe_url
 from .parsers import ParseError, jsonld
 from .secrets import credential
 from .web_discovery import inventory
@@ -126,6 +127,9 @@ def collect_indexed(source: str, options: dict, fetcher, config: dict) -> list:
                     except ParseError:
                         listings = jsonld(html, url, source, discovered)
                     for listing in listings:
+                        listing.listing_id = hashlib.sha256(
+                            canonical_url(listing.canonical_url).encode()
+                        ).hexdigest()[:20]
                         # Discovery is partial; claims and availability remain source evidence.
                         listing.evidence["indexed_discovery"] = {
                             "query": query,

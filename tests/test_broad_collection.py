@@ -70,3 +70,18 @@ def test_partial_scan_does_not_mark_missing_bike_unavailable(
         assert json.loads(row[0])["partial"] is True
     finally:
         store.close()
+
+
+def test_acquisition_filters_follow_changed_policy(broad_config):
+    broad_config["search"].update(
+        max_price_nzd=14000, min_year=2019, max_odometer_km=20000
+    )
+    url = collectors.criteria_search_url(
+        "https://www.trademe.co.nz/a/search?price_max=12500&year_min=2017&search_string=motorcycle",
+        broad_config["search"],
+    )
+    values = parse_qs(urlsplit(url).query)
+    assert values["price_max"] == ["14000"]
+    assert values["year_min"] == ["2019"]
+    assert values["odometer_max"] == ["20000"]
+    assert values["search_string"] == ["motorcycle"]

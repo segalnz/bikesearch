@@ -11,7 +11,8 @@ python3 -m venv .venv
 .venv/bin/python scripts/check_publication.py
 ```
 
-Tests use synthetic fixtures and mocked network services. Do not run production
+Tests use synthetic fixtures, small sanitized public-markup excerpts and mocked
+network services. Do not run production
 collection or paid API calls from CI. Use `scripts/demo.py` for an offline preview.
 
 Keep eligibility rules independent of network/database code. Add source-specific

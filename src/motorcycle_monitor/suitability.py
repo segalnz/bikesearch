@@ -1,6 +1,7 @@
 """Model-independent purchase requirements; unknown mandatory facts need review."""
 
 import re
+from urllib.parse import urlsplit
 
 from .classification import power
 from .normalization import utc_now
@@ -20,15 +21,17 @@ def advert_facts(text: str) -> dict:
         values = {float(match[1]) for match in matches}
         if len(values) == 1:
             facts[field] = {"value": values.pop(), "quotation": matches[0][0]}
-    if "wet_weight_kg" not in facts:
-        matches = list(
-            re.finditer(r"\b(\d+(?:\.\d+)?)\s*kg\s*(?:wet|kerb|curb)\b", text, re.I)
-        )
-        if len({float(match[1]) for match in matches}) == 1:
-            facts["wet_weight_kg"] = {
-                "value": float(matches[0][1]),
-                "quotation": matches[0][0],
-            }
+    wet_matches = list(re.finditer(patterns["wet_weight_kg"], text, re.I)) + list(
+        re.finditer(r"\b(\d+(?:\.\d+)?)\s*kg\s*(?:wet|kerb|curb)\b", text, re.I)
+    )
+    wet_values = {float(match[1]) for match in wet_matches}
+    if len(wet_values) == 1:
+        facts["wet_weight_kg"] = {
+            "value": wet_values.pop(),
+            "quotation": wet_matches[0][0],
+        }
+    else:
+        facts.pop("wet_weight_kg", None)
     if "power_hp" not in facts:
         match = re.search(r"\b(\d+(?:\.\d+)?)\s*kw\b", text, re.I)
         if match:
@@ -57,7 +60,7 @@ def advert_facts(text: str) -> dict:
         if len(values) == 1:
             facts["cylinders"] = {"value": values.pop(), "quotation": engines[0][0]}
     if re.search(
-        r"\b(?:no|without|non[- ]|not fitted with)\s*abs\b|\babs\s+(?:removed|disabled|fault|not working)\b",
+        r"\b(?:no|without|non[- ]|not fitted with|not)\s*abs\b|\babs\s+(?:removed|disabled|fault|not working|not fitted|not present)\b",
         text,
         re.I,
     ):
@@ -66,7 +69,7 @@ def advert_facts(text: str) -> dict:
             "quotation": "Advert says ABS absent/disabled/faulty",
         }
     elif re.search(r"\babs\b", text, re.I) and not re.search(
-        r"\b(?:optional|available)\s+abs\b|\babs\s+(?:optional|available|option)\b",
+        r"\b(?:optional|available)\s+abs\b|\babs\s+(?:is\s+)?(?:optional|available|option)\b",
         text,
         re.I,
     ):
@@ -121,14 +124,19 @@ def classify_broad(listing, config):
     requirements = search["requirements"]
     preferences = search.get("preferences", {})
     reject, unknown = [], []
-    if listing.evidence.get("vehicle_type") == "ATV":
+    if (
+        listing.evidence.get("vehicle_type") == "ATV"
+        or "/quads-atvs/" in urlsplit(listing.canonical_url).path
+    ):
         reject.append("ATV/quad/side-by-side is not a motorcycle candidate")
     text = listing.title + "\n" + listing.description
     facts = advert_facts(text)
     listing.power_status, listing.power_evidence = power(listing)
     # Explicit LAMS in either title or description always excludes in this search,
     # including adverts claiming conversion or contradicting themselves.
-    cleaned = re.sub(r"\b(?:non[- ]lams|not\s+lams)\b", "", text, flags=re.I)
+    cleaned = re.sub(
+        r"\b(?:non[- ]lams|not\s+(?:(?:a|an|the)\s+)?lams)\b", "", text, flags=re.I
+    )
     if (
         re.search(r"\blams\b|\blearner[- ]approved\b|\b35\s*kw\b", cleaned, re.I)
         or listing.power_status == "RESTRICTED"

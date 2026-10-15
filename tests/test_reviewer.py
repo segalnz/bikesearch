@@ -68,6 +68,9 @@ def test_api_review_cached_bounded_and_advisory(tmp_path):
     again = Reviewer(config, tmp_path / "cache", client)
     again.review(listing, {})
     assert len(requests) == 1
+    again.review(listing, {"max_price_nzd": 14000})
+    assert len(requests) == 2
+    assert json.loads(requests[-1].content)["messages"][1]["content"].find("14000") >= 0
     listing.title = "Different bike"
     reviewer.review(listing, {})
     assert listing.evidence["ai_review"]["status"] == "pending"

@@ -95,6 +95,7 @@ def check(root: Path, index: bool = False) -> tuple[int, list[str]]:
                 elif (
                     candidate.is_file()
                     and "__pycache__" not in candidate.parts
+                    and not any(part.endswith(".egg-info") for part in candidate.parts)
                     and candidate.suffix != ".pyc"
                 ):
                     entries.append(

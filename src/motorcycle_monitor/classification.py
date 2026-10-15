@@ -17,11 +17,12 @@ def power(listing: Listing) -> tuple[str, str | None]:
         )
     positives = list(
         re.finditer(
-            r"\b(?:full[ -]power(?:ed)?|unrestricted|not\s+lams|non[ -]lams)\b", text
+            r"\b(?:full[ -]power(?:ed)?|unrestricted|not\s+(?:(?:a|an|the)\s+)?lams|non[ -]lams)\b",
+            text,
         )
     )
     cleaned = re.sub(
-        r"\b(?:not\s+lams|non[ -]lams|not\s+(?:learner[ -]approved|restricted)|unrestricted)\b",
+        r"\b(?:not\s+(?:(?:a|an|the)\s+)?lams|non[ -]lams|not\s+(?:learner[ -]approved|restricted)|unrestricted)\b",
         "",
         text,
     )
@@ -30,7 +31,9 @@ def power(listing: Listing) -> tuple[str, str | None]:
     )
     # A title saying LAMS remains evidence even when the description contradicts it.
     title = re.sub(
-        r"\b(?:not\s+lams|non[ -]lams|unrestricted)\b", "", listing.title.lower()
+        r"\b(?:not\s+(?:(?:a|an|the)\s+)?lams|non[ -]lams|unrestricted)\b",
+        "",
+        listing.title.lower(),
     )
     if re.search(r"\b(?:lams|learner[ -]approved|restricted)\b", title):
         negatives.append(True)

@@ -105,3 +105,33 @@ def test_broad_deployment_replaces_narrow_sources_preserves_data(broad_config):
     assert updated["database"]["path"] == "/var/lib/existing.db"
     assert updated["mqtt"]["host"] == "existing-broker"
     assert updated["search"]["sources"] == broad_config["search"]["sources"]
+
+
+@pytest.mark.parametrize(
+    "claim", ["Not a LAMS bike", "Not the LAMS model", "Not LAMS approved"]
+)
+def test_explicit_negated_lams_claim_is_not_rejected(broad_config, claim):
+    item = machine()
+    item.description = item.description.replace("Non-LAMS full power", claim)
+    assert classify(item, broad_config).classification == "ACCEPTED"
+
+
+@pytest.mark.parametrize("claim", ["ABS not fitted", "Not ABS", "No ABS"])
+def test_negated_abs_is_never_a_match(broad_config, claim):
+    item = machine()
+    item.description = item.description.replace("ABS.", claim + ".")
+    assert classify(item, broad_config).classification == "REJECTED"
+
+
+def test_optional_abs_and_quad_category_require_exclusion_or_review(broad_config):
+    item = machine()
+    item.description = item.description.replace("ABS.", "ABS is optional.")
+    assert classify(item, broad_config).classification == "REVIEW"
+    item = machine(
+        canonical_url="https://www.trademe.co.nz/a/motors/motorbikes/motorbikes/quads-atvs/make/listing/1"
+    )
+    assert classify(item, broad_config).classification == "REJECTED"
+
+
+def test_conflicting_wet_weight_formats_remain_unknown():
+    assert "wet_weight_kg" not in advert_facts("Wet weight 205 kg; 240 kg wet")

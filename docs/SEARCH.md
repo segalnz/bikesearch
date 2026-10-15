@@ -35,7 +35,9 @@ unconfirmed unless researched; AI discussion is separate from verified evidence.
 ## Public search coverage
 
 Trade Me price/year controls and `page=` pagination were checked against the
-public site. Odometer is independently filtered locally; its URL parameter is not
+public site. Price/year acquisition parameters are regenerated from the policy on each scan,
+so editing the criteria cannot leave an old URL ceiling in effect. Odometer is
+independently filtered locally; its URL parameter is not
 relied on for eligibility. The broad search is deliberately model-independent.
 Six search pages and up to twelve promising detail adverts are inspected per
 scan. The first page is revisited; later pages rotate using a local cursor in the

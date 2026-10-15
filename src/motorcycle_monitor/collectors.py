@@ -279,11 +279,26 @@ def public_page(url, source, options, fetcher, config):
         return html, parse(html, url, source, options)
 
 
+def criteria_search_url(url: str, search: dict) -> str:
+    """Keep verified public filter parameters derived from the current policy."""
+    parts = urlsplit(url)
+    query = dict(parse_qsl(parts.query))
+    query.update(
+        price_max=str(search["max_price_nzd"]),
+        year_min=str(search["min_year"]),
+        odometer_max=str(search["max_odometer_km"]),
+    )
+    return urlunsplit(
+        (parts.scheme, parts.netloc, parts.path, urlencode(query), parts.fragment)
+    )
+
+
 def collect_broad_trademe(source, options, fetcher, config):
     """Bounded discovery, explicitly partial: never evidence that a bike vanished."""
     listings = {}
     cursors = []
-    for start in options["search_urls"]:
+    for configured_url in options["search_urls"]:
+        start = criteria_search_url(configured_url, config["search"])
         cursor_file = (
             fetcher.cache_dir
             / ("discovery-" + hashlib.sha256(start.encode()).hexdigest() + ".json")
