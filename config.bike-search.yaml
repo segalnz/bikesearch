@@ -1,0 +1,249 @@
+# Broad used-bike search. Preferences rank candidates; unknown requirements need review.
+search:
+  max_price_nzd: 12500
+  max_odometer_km: 25000
+  coverage: nationwide
+  preferred_regions:
+  - Wellington
+  - Hutt
+  - Kapiti
+  - Wairarapa
+  - Manawatu
+  - Taranaki
+  - Hawke's Bay
+  - Hawkes Bay
+  - Whanganui
+  - Horowhenua
+  - Levin
+  models: []
+  sources:
+    dealer_courtesy:
+      enabled: true
+      parser: website
+      allowed_hosts:
+      - www.courtesymotorcycles.co.nz
+      - courtesymotorcycles.co.nz
+      search_urls:
+      - https://www.courtesymotorcycles.co.nz/stock/
+      dealer_name: Courtesy Motorcycles
+      location: Palmerston North, Manawatu
+      allow_partial: true
+      max_pages: 2
+      max_details: 2
+      dealer_evidence_url: https://www.courtesymotorcycles.co.nz/stock/
+      dealer_verified_at: '2026-10-16'
+      retain_description: true
+    dealer_maidstone:
+      enabled: true
+      parser: website
+      allowed_hosts:
+      - www.maidstoneyamaha.co.nz
+      - maidstoneyamaha.co.nz
+      search_urls:
+      - https://www.maidstoneyamaha.co.nz/pre-owned/
+      dealer_name: Maidstone Yamaha
+      location: Upper Hutt, Wellington
+      allow_partial: true
+      max_pages: 2
+      max_details: 2
+      dealer_evidence_url: https://www.maidstoneyamaha.co.nz/pre-owned/
+      dealer_verified_at: '2026-10-16'
+      retain_description: true
+    dealer_langlands:
+      enabled: true
+      parser: website
+      allowed_hosts:
+      - www.hondamotorcycles.co.nz
+      - hondamotorcycles.co.nz
+      search_urls:
+      - https://www.hondamotorcycles.co.nz/used_bikes
+      dealer_name: Langlands Honda
+      location: Masterton, Wairarapa
+      allow_partial: true
+      max_pages: 2
+      max_details: 2
+      dealer_evidence_url: https://www.hondamotorcycles.co.nz/used_bikes
+      dealer_verified_at: '2026-10-16'
+      retain_description: true
+    dealer_ths:
+      enabled: true
+      parser: website
+      allowed_hosts:
+      - www.thsmoto.co.nz
+      - thsmoto.co.nz
+      search_urls:
+      - https://www.thsmoto.co.nz/collections/used-bikes-for-sale
+      dealer_name: THS Moto
+      location: null
+      allow_partial: true
+      max_pages: 2
+      max_details: 2
+      dealer_evidence_url: https://www.thsmoto.co.nz/collections/used-bikes-for-sale
+      dealer_verified_at: '2026-10-16'
+      retain_description: true
+    dealer_colemans:
+      enabled: true
+      parser: website
+      allowed_hosts:
+      - colemansmotorcycles.co.nz
+      - colemansmotorcycles.co.nz
+      search_urls:
+      - https://colemansmotorcycles.co.nz/collections/colemans-instore-motorbikes-auckland
+      dealer_name: Colemans Motorcycles
+      location: Auckland
+      allow_partial: true
+      max_pages: 2
+      max_details: 2
+      dealer_evidence_url: https://colemansmotorcycles.co.nz/collections/colemans-instore-motorbikes-auckland
+      dealer_verified_at: '2026-10-16'
+      retain_description: true
+    dealer_cooks:
+      enabled: true
+      parser: website
+      allowed_hosts:
+      - www.cookshonda.co.nz
+      - cookshonda.co.nz
+      search_urls:
+      - https://www.cookshonda.co.nz/product-category/bikes-in-store/used/
+      dealer_name: Cooks Honda
+      location: Stratford, Taranaki
+      allow_partial: true
+      max_pages: 2
+      max_details: 2
+      dealer_evidence_url: https://www.cookshonda.co.nz/product-category/bikes-in-store/used/
+      dealer_verified_at: '2026-10-16'
+      retain_description: true
+    market_turners:
+      enabled: true
+      parser: website
+      allowed_hosts:
+      - www.turners.co.nz
+      - turners.co.nz
+      search_urls:
+      - https://www.turners.co.nz/motorcycles-scooters/used-motorbikes-for-sale
+      dealer_name: Turners
+      location: null
+      allow_partial: true
+      max_pages: 2
+      max_details: 2
+      dealer_evidence_url: https://www.turners.co.nz/motorcycles-scooters/used-motorbikes-for-sale
+      dealer_verified_at: '2026-10-16'
+      retain_description: true
+    trademe:
+      enabled: true
+      parser: trademe
+      detail_parser: trademe_detail
+      allowed_hosts:
+      - www.trademe.co.nz
+      - trademe.co.nz
+      search_urls:
+      - https://www.trademe.co.nz/a/motors/motorbikes/motorbikes/search?price_max=12500&year_min=2017&odometer_max=25000
+      max_pages: 6
+      allow_partial: true
+      max_details: 12
+      retain_description: true
+    dealer_tss:
+      enabled: true
+      parser: tss
+      allowed_hosts:
+      - tssmotorcycles.co.nz
+      search_urls:
+      - https://tssmotorcycles.co.nz/used-motorcycles-wellington/
+      dealer_name: TSS Motorcycles
+      preferred_dealer: true
+      location: Lower Hutt, Wellington
+      dealer_evidence_url: https://tssmotorcycles.co.nz/
+      dealer_verified_at: '2026-10-13'
+      retain_description: true
+    dealer_cyclespot:
+      enabled: true
+      parser: cyclespot
+      allowed_hosts:
+      - cyclespotwellington.co.nz
+      search_urls:
+      - https://cyclespotwellington.co.nz/used/view-all-used-stock/
+      dealer_name: Cyclespot Wellington
+      preferred_dealer: true
+      location: Lower Hutt, Wellington
+      dealer_evidence_url: https://cyclespotwellington.co.nz/contacts/
+      dealer_verified_at: '2026-10-13'
+      retain_description: true
+    web_search:
+      enabled: false
+      parser: indexed_search
+      provider: brave
+      api_key_file: /etc/motorcycle-monitor/search.token
+      allowed_hosts: []
+      search_urls: []
+      allow_partial: true
+      max_queries: 4
+      max_documents: 12
+      queries:
+      - used motorcycles New Zealand Wellington Palmerston North Masterton ABS non
+        LAMS {year} under {price}
+      - used motorcycles New Zealand twin triple four cylinder ABS for sale {year}
+      - used motorcycles NZ full power low kilometres fairing dealer under {price}
+      - used motorcycles Lower North Island non LAMS sports touring for sale
+  area_label: New Zealand; Wellington / Lower North Island preferred
+  allowed_locations: []
+  mode: all_models
+  min_year: 2017
+  requirements:
+    cylinders:
+    - 2
+    - 3
+    - 4
+    abs: true
+    max_wet_weight_kg: 225
+    max_seat_height_mm: 825
+    english_manual: true
+    diy_serviceable: true
+  preferences:
+    min_year: 2020
+    odometer_under_km: 15000
+    min_power_hp: 80
+    wet_weight_under_kg: 210
+    max_seat_height_mm: 810
+    factory_weather_protection: true
+    us_market: true
+collector:
+  mode: http
+  request_interval_seconds: 10
+  max_concurrency: 1
+  request_timeout_seconds: 30
+  max_requests: 120
+  max_retries: 2
+  cache_seconds: 3600
+  enable_browser_fallback: true
+  browser_executable: null
+  browser_resource_budget: 400
+alerts:
+  price_drop_nzd: 500
+  price_drop_percent: 5
+  notify_unknown_power: true
+  notify_initial_results: false
+mqtt:
+  enabled: false
+  host: localhost
+  port: 1883
+  topic_prefix: motorcycles
+  qos: 1
+  tls: false
+database:
+  path: /var/lib/motorcycle-monitor/listings.db
+logging:
+  level: INFO
+  path: /var/log/motorcycle-monitor/monitor.log
+llm:
+  enabled: true
+  provider: deepseek
+  model: deepseek-flash
+  api_key_file: /etc/motorcycle-monitor/deepseek.token
+  max_calls_per_scan: 16
+availability:
+  missing_scans: 2
+  minimum_hours_between_misses: 12
+web:
+  host: 0.0.0.0
+  port: 8765
+  refresh_seconds: 60

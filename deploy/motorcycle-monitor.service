@@ -1,0 +1,23 @@
+[Unit]
+Description=Personal motorcycle listing monitor
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+User=motorcycle-monitor
+Group=motorcycle-monitor
+WorkingDirectory=/opt/motorcycle-monitor
+EnvironmentFile=-/etc/motorcycle-monitor/monitor.env
+Environment=PYTHONUNBUFFERED=1
+Environment=PLAYWRIGHT_BROWSERS_PATH=/opt/motorcycle-monitor/browsers
+ExecStart=/opt/motorcycle-monitor/.venv/bin/motorcycle-monitor --config /etc/motorcycle-monitor/config.yaml scan --fresh
+StateDirectory=motorcycle-monitor
+LogsDirectory=motorcycle-monitor
+TimeoutStartSec=30min
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/motorcycle-monitor /var/log/motorcycle-monitor

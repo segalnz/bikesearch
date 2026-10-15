@@ -1,0 +1,121 @@
+# Full-power Ninja 650, all years/prices, strictly under 10,000 km.
+search:
+  max_price_nzd: null
+  max_odometer_km: 9999
+  coverage: regional
+  preferred_regions:
+  - Wellington
+  - Hutt
+  - Kapiti
+  - Wairarapa
+  - Manawatu
+  models:
+  - make: Kawasaki
+    model: Ninja 650
+    min_year: null
+    require_unrestricted: true
+  sources:
+    trademe:
+      enabled: true
+      parser: trademe
+      detail_parser: trademe_detail
+      allowed_hosts:
+      - www.trademe.co.nz
+      - trademe.co.nz
+      search_urls:
+      - https://www.trademe.co.nz/a/motors/motorbikes/motorbikes/search?search_string=Ninja%20650
+    dealer_tss:
+      enabled: true
+      parser: tss
+      allowed_hosts:
+      - tssmotorcycles.co.nz
+      search_urls:
+      - https://tssmotorcycles.co.nz/used-motorcycles-wellington/
+      - https://tssmotorcycles.co.nz/new-motorcycles-wellington/
+      dealer_name: TSS Motorcycles
+      preferred_dealer: true
+      location: Lower Hutt, Wellington
+      dealer_evidence_url: https://tssmotorcycles.co.nz/
+      dealer_verified_at: '2026-10-13'
+    dealer_cyclespot:
+      enabled: true
+      parser: cyclespot
+      allowed_hosts:
+      - cyclespotwellington.co.nz
+      search_urls:
+      - https://cyclespotwellington.co.nz/used/view-all-used-stock/
+      - https://cyclespotwellington.co.nz/used/view-all-new-stock/?keyword=Ninja&listingType=new
+      dealer_name: Cyclespot Wellington
+      preferred_dealer: true
+      location: Lower Hutt, Wellington
+      dealer_evidence_url: https://cyclespotwellington.co.nz/contacts/
+      dealer_verified_at: '2026-10-13'
+  area_label: Wellington to Palmerston North and Masterton
+  allowed_locations:
+  - Wellington
+  - Lower Hutt
+  - Upper Hutt
+  - Hutt Valley
+  - Porirua
+  - Kapiti
+  - Paraparaumu
+  - Raumati
+  - Waikanae
+  - Otaki
+  - Levin
+  - Foxton
+  - Shannon
+  - Longburn
+  - Linton
+  - Palmerston North
+  - Masterton
+  - Carterton
+  - Greytown
+  - Featherston
+  - Martinborough
+  - Petone
+  - Eastbourne
+  - Wainuiomata
+  - Pukerua Bay
+  - Paekakariki
+  - Tawa
+  - Johnsonville
+  - Karori
+  - Terrace End
+collector:
+  mode: http
+  request_interval_seconds: 10
+  max_concurrency: 1
+  request_timeout_seconds: 30
+  max_requests: 30
+  max_retries: 2
+  cache_seconds: 3600
+  enable_browser_fallback: true
+  browser_executable: null
+  browser_resource_budget: 400
+alerts:
+  price_drop_nzd: 500
+  price_drop_percent: 5
+  notify_unknown_power: true
+  notify_initial_results: false
+mqtt:
+  enabled: false
+  host: localhost
+  port: 1883
+  topic_prefix: motorcycles
+  qos: 1
+  tls: false
+database:
+  path: /var/lib/motorcycle-monitor/listings.db
+logging:
+  level: INFO
+  path: /var/log/motorcycle-monitor/monitor.log
+llm:
+  enabled: false
+availability:
+  missing_scans: 2
+  minimum_hours_between_misses: 12
+web:
+  host: 0.0.0.0
+  port: 8765
+  refresh_seconds: 60

@@ -1,0 +1,10 @@
+[Unit]
+Description=Scan motorcycles daily at 08:00 New Zealand time
+
+[Timer]
+OnCalendar=*-*-* 08:00:00 Pacific/Auckland
+Persistent=true
+Unit=motorcycle-monitor.service
+
+[Install]
+WantedBy=timers.target

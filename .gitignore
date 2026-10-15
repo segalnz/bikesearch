@@ -1,0 +1,32 @@
+.venv/
+.env
+config.yaml
+data/
+*.db
+*.db-wal
+*.db-shm
+*.lock
+*.log
+__pycache__/
+.pytest_cache/
+*.egg-info/
+build/
+dist/
+.deploy.local.json
+
+# Local DeepSeek API credential
+token.txt
+# Credentials and local deployment state
+search-token.txt
+brave-token.txt
+tavily-token.txt
+*.token
+*.key
+*.pem
+.env.*
+!.env.example
+.ruff_cache/
+.coverage
+htmlcov/
+tokens.txt
+*token*.txt

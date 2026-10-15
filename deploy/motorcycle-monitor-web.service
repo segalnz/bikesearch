@@ -1,0 +1,24 @@
+[Unit]
+Description=Motorcycle monitor web dashboard
+After=network.target
+
+[Service]
+Type=simple
+User=motorcycle-monitor
+Group=motorcycle-monitor
+WorkingDirectory=/opt/motorcycle-monitor
+ExecStart=/opt/motorcycle-monitor/.venv/bin/motorcycle-monitor --config /etc/motorcycle-monitor/config.yaml serve
+Restart=on-failure
+RestartSec=5
+StateDirectory=motorcycle-monitor
+LogsDirectory=motorcycle-monitor
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+# SQLite WAL readers may need the shared-memory coordination files.
+ReadWritePaths=/var/lib/motorcycle-monitor /var/log/motorcycle-monitor
+
+[Install]
+WantedBy=multi-user.target

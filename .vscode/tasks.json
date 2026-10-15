@@ -1,0 +1,13 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Redeploy motorcycle monitor",
+      "type": "shell",
+      "command": "${workspaceFolder}/scripts/redeploy.sh",
+      "group": {"kind": "build", "isDefault": true},
+      "problemMatcher": [],
+      "presentation": {"reveal": "always", "panel": "dedicated"}
+    }
+  ]
+}

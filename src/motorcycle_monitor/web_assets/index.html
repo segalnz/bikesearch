@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Motorcycle Monitor</title>
+    <link rel="stylesheet" href="/dashboard.css" />
+    <script src="/dashboard.js" defer></script>
+  </head>
+  <body>
+    <header>
+      <div class="brand">
+        <span class="mark" aria-hidden="true">M</span>
+        <div>
+          <p class="eyebrow">YOUR NEXT MOTORCYCLE</p>
+          <h1>Motorcycle Monitor</h1>
+        </div>
+      </div>
+      <div class="toolbar">
+        <span id="updated">Loading saved results…</span
+        ><button id="refresh" type="button">Refresh results</button>
+      </div>
+    </header>
+    <main>
+      <section class="intro">
+        <div>
+          <h2>Find the right ride.</h2>
+          <p id="criteria">Loading current search requirements…</p>
+        </div>
+        <p class="schedule">
+          Scans run in the background.<br />Results refresh automatically.
+        </p>
+      </section>
+      <div id="message" role="status" aria-live="polite"></div>
+      <section class="stats" aria-label="Saved inventory summary">
+        <div>
+          <span id="count-matches">—</span>
+          <p>Available matches</p>
+        </div>
+        <div>
+          <span id="count-review">—</span>
+          <p>Need review</p>
+        </div>
+        <div>
+          <span id="count-unavailable">—</span>
+          <p>No longer available / uncertain</p>
+        </div>
+        <div>
+          <span id="count-total">—</span>
+          <p>Listings tracked</p>
+        </div>
+      </section>
+      <nav class="filters" aria-label="Filter listings">
+        <button data-filter="candidates" class="selected" aria-pressed="true">
+          Potential candidates</button
+        ><button data-filter="matches" aria-pressed="false">
+          Available matches</button
+        ><button data-filter="review" aria-pressed="false">Needs review</button
+        ><button data-filter="unavailable" aria-pressed="false">
+          Unavailable / uncertain</button
+        ><button data-filter="all" aria-pressed="false">All tracked</button
+        ><label class="search"
+          ><span class="sr-only">Search listings</span
+          ><input
+            id="search"
+            type="search"
+            placeholder="Search bike, dealer or location"
+        /></label>
+      </nav>
+      <div class="section-title">
+        <h2 id="list-title">Available matches</h2>
+        <span id="list-count"></span>
+      </div>
+      <section id="listings" class="cards" aria-live="polite"></section>
+      <section class="health">
+        <div class="section-title">
+          <h2>Collection health</h2>
+          <span id="outbox"></span>
+        </div>
+        <p>
+          Last completed collection for each source. Opening this page does not
+          start a scan.
+        </p>
+        <div id="runs" class="runs"></div>
+      </section>
+      <footer>
+        Prices in NZD · Dates in New Zealand time · Missing listings stay in
+        history; absence does not confirm a sale.
+      </footer>
+    </main>
+  </body>
+</html>
