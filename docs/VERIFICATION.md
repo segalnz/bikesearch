@@ -1,5 +1,15 @@
 # Verification history
 
+## Hard regional eligibility and LLM research fallback — 16 October 2026
+
+- Release 0.3.4: 278 offline tests pass. Ruff lint/format and JavaScript syntax checks pass.
+- The broad preset now requires the Wellington–Palmerston North–Masterton corridor. Shared town matching excludes outside stock and keeps ambiguous locations out of candidate views. Saved listings reclassify against current geography.
+- DeepSeek can propose exact specification sources when normal discovery/extraction cannot resolve horsepower. Fetched model/year quotations establish facts; unverified LLM output cannot. Tests cover fallback recovery, rejected private URLs, cached reuse and unsupported numerical claims.
+- Identified models can receive research before entering the shortlist. Missing horsepower receives priority, and unresolved lookups retry after six hours instead of seven days.
+- Cards display engine horsepower and evidence type directly, with manufacturer links where available. Current NZ manufacturer references distinguish the 675NK's rated 70 kW from the 500SR VOOM's rated 58 kW and higher ram-air output.
+- Operational plan schema 3 requires numeric power estimates meeting the minimum for priority models; geographic boundaries participate in the cache fingerprint.
+
+
 ## Candidate precision correction — 16 October 2026
 
 - The reported 2026 Honda NSC110 Dio exposed a selection defect: a short exclusion list left unidentified stock in REVIEW, and the dashboard treated every REVIEW as a potential candidate. The previous count was not a count of suitable models.

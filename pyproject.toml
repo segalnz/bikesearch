@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "motorcycle-monitor"
-version = "0.3.3"
+version = "0.3.4"
 description = "Evidence-based NZ motorcycle discovery with a dashboard, SQLite history and optional AI review"
 readme = "README.md"
 requires-python = ">=3.11"

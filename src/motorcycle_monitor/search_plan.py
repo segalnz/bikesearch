@@ -18,7 +18,7 @@ import httpx
 from .normalization import utc_now
 from .secrets import credential
 
-VERSION = 2
+VERSION = 3
 POLICY_KEYS = (
     "min_year",
     "max_price_nzd",
@@ -26,16 +26,18 @@ POLICY_KEYS = (
     "requirements",
     "preferences",
     "coverage",
+    "allowed_locations",
+    "area_label",
     "preferred_regions",
 )
 SYSTEM = """You are compiling a reusable operational motorcycle search plan for New Zealand.
-Input is purchase requirements, not individual advertisements. Return JSON only:
+Input is purchase requirements, not individual advertisements. Respect allowed_locations as a hard boundary and include the named area in acquisition queries. Return JSON only:
 {"summary":"brief operational strategy", "capacity_rules":[{"name":"Ordinary small stock engines", "max_engine_cc":250,"power_hp_upper":75,"confidence":"high","reason":"Ordinary stock 250cc-or-smaller engines fall below 80 hp; racing/tuned exceptions must remain for investigation."}], "rules":[
 {"name":"family", "make":"Yamaha", "models":["MT-07","XSR700"],
 "year_min":2017,"year_max":2026,"action":"screen_out",
 "confidence":"high","power_hp_upper":76,
 "reason":"Even unrestricted stock variants are below the required horsepower; distinguish MT-09"}],
-"priority_models":[{"make":"Honda","model":"CBR650R","reason":"promising power/weight/seat; confirm NZ variant"}],
+"priority_models":[{"make":"Honda","model":"CBR650R","estimated_power_hp":94,"reason":"promising power/weight/seat; confirm NZ variant"}],
 "queries":["Honda CBR650R non LAMS ABS New Zealand used"],
 "cautions":["599/600/636 cc four-cylinder supersports can exceed 80 hp; never reject by cc alone"]}.
 Produce up to 50 HIGH-CONFIDENCE low-power model-family rules covering common NZ stock.
@@ -67,7 +69,7 @@ has a more powerful exception, omit the exclusion or narrow aliases/year scope.
 Do not exclude high-output 400/600/636 cc four-cylinder sports bikes merely for capacity.
 Examples of distinct families to evaluate: Kawasaki Ninja 650 vs Ninja ZX-6R;
 Yamaha MT-07 vs MT-09; Honda CB500F vs CB650R vs CBR600RR; Suzuki SV650 vs GSX-R600.
-Identify up to 25 promising priority models satisfying most power/weight/seat/ABS requirements,
+Identify up to 25 promising priority models. Their estimated_power_hp MUST meet the mandatory minimum. Never prioritize a below-minimum model merely to check it: place high-confidence low-power families in exclusion rules instead. Satisfy most weight/seat/ABS requirements,
 with year/variant caveats in reasons. A priority list is never a whitelist. Keep unknown
 and unlisted models in discovery. Never assume non-LAMS or ABS from a model name.
 Supply up to 8 targeted public search queries, including NZ location/price/year intent,
@@ -191,11 +193,14 @@ def validate_plan(value, search):
             and isinstance(item.get("make"), str)
             and literal_model(item.get("model"))
             and isinstance(item.get("reason"), str)
+            and type(item.get("estimated_power_hp")) in (int, float)
+            and (minimum or 0) <= item["estimated_power_hp"] < 500
         ):
             priorities.append(
                 {
                     "make": item["make"][:60],
                     "model": item["model"],
+                    "estimated_power_hp": item["estimated_power_hp"],
                     "reason": item["reason"][:500],
                 }
             )

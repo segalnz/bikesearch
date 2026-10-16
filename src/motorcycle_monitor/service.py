@@ -178,6 +178,8 @@ def _scan(
                     for listing in sorted(
                         listings,
                         key=lambda x: (
+                            "power_hp"
+                            in x.evidence.get("suitability", {}).get("facts", {}),
                             not preferred_model(x, config["search"]),
                             not bool(document_urls(x)),
                             x.power_status != "UNRESTRICTED",
@@ -186,7 +188,24 @@ def _scan(
                             ),
                         ),
                     ):
-                        if is_candidate(listing):
+                        from .locations import area_status
+
+                        identified = listing.model_year is not None and (
+                            bool(document_urls(listing))
+                            or bool(listing.make and listing.model)
+                        )
+                        local = (
+                            area_status(
+                                listing.location,
+                                config["search"].get("allowed_locations", []),
+                            )
+                            == "inside"
+                        )
+                        if (
+                            local
+                            and listing.classification != "REJECTED"
+                            and (is_candidate(listing) or identified)
+                        ):
                             researcher.research(listing)
                             classify(listing, config)
                 if reviewer:

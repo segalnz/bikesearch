@@ -56,7 +56,7 @@ def build_demo(folder: Path) -> dict:
                 "Non-LAMS full power. Inline four. ABS. 95 hp. Exact wet weight, seat height and workshop support not supplied.",
                 9500,
                 14000,
-                "Christchurch",
+                "Masterton, Wairarapa",
             ),
             (
                 4,

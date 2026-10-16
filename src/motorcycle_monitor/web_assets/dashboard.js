@@ -101,6 +101,7 @@ function card(item) {
     ),
   );
   node.append(price);
+  const horsepower = item.evidence?.suitability?.facts?.power_hp;
   const facts = el("dl", "facts");
   facts.append(
     fact("Model year", item.model_year ?? "Unknown"),
@@ -111,6 +112,16 @@ function card(item) {
         : new Intl.NumberFormat("en-NZ").format(item.odometer_km) + " km",
     ),
     fact("Location", item.location || "Unknown"),
+    fact(
+      "Engine power",
+      horsepower == null
+        ? "Unconfirmed"
+        : horsepower.value +
+            " hp · " +
+            (horsepower.kind === "manufacturer_research"
+              ? "Manufacturer specification"
+              : "Advert claim"),
+    ),
     fact("Seller", item.dealer_name || item.seller_name || "Unknown"),
     fact(
       "On-road costs",
@@ -128,9 +139,25 @@ function card(item) {
     ),
   );
   node.append(facts);
+  if (horsepower?.source_url) {
+    try {
+      const url = new URL(horsepower.source_url);
+      if (url.protocol === "https:") {
+        const source = el("a", null, "Power specification source");
+        source.href = url.href;
+        source.target = "_blank";
+        source.rel = "noopener noreferrer";
+        node.append(source);
+      }
+    } catch {}
+  }
   const power = el("div", "power");
   power.append(
-    el("strong", null, "Power: " + item.power_status.toLowerCase()),
+    el(
+      "strong",
+      null,
+      "LAMS / restriction status: " + item.power_status.toLowerCase(),
+    ),
     el("span", null, item.power_evidence || "No supporting evidence recorded."),
   );
   node.append(power);

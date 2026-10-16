@@ -34,6 +34,7 @@ RAW = {
         {
             "make": "Honda",
             "model": "CBR600RR",
+            "estimated_power_hp": 118,
             "reason": "High-output 599 cc four-cylinder; confirm ABS/year.",
         }
     ],
@@ -385,11 +386,13 @@ def test_unknown_discoveries_do_not_consume_cloud_research_budget(
         lambda *args, **kwargs: capacity_plan(broad_config["search"]),
     )
     unknown = listing("2020 Unknown 450")
+    identified = listing("2020 Honda CB650R", make="Honda", model="CB650R")
     dio = listing("2026 Honda NSC110 Dio")
     dio.engine_cc = 110
     supported = listing("2020 Example road bike", description="Non-LAMS 90 hp")
     monkeypatch.setattr(
-        "motorcycle_monitor.service.collect", lambda *args: [unknown, dio, supported]
+        "motorcycle_monitor.service.collect",
+        lambda *args: [unknown, dio, supported, identified],
     )
     broad_config["search"]["sources"] = {
         "trademe": broad_config["search"]["sources"]["trademe"]
@@ -398,6 +401,39 @@ def test_unknown_discoveries_do_not_consume_cloud_research_budget(
     try:
         result = scan(broad_config, dry_run=True, fetcher=fetcher, reviewer=Reviewer())
         assert not result["errors"]
-        assert calls == [("research", supported.title), ("advisory", supported.title)]
+        assert calls == [
+            ("research", identified.title),
+            ("research", supported.title),
+            ("advisory", supported.title),
+        ]
     finally:
         fetcher.close()
+
+
+def test_below_minimum_estimates_cannot_enter_priority_models(broad_config):
+    from copy import deepcopy
+
+    raw = deepcopy(RAW)
+    raw["priority_models"].extend(
+        [
+            {
+                "make": "Kawasaki",
+                "model": "Ninja 650",
+                "estimated_power_hp": 68,
+                "reason": "Check power",
+            },
+            {
+                "make": "Yamaha",
+                "model": "MT-07",
+                "estimated_power_hp": 74,
+                "reason": "Check power",
+            },
+            {
+                "make": "Honda",
+                "model": "CB500F",
+                "reason": "No power estimate supplied",
+            },
+        ]
+    )
+    validated = validate_plan(raw, broad_config["search"])
+    assert [model["model"] for model in validated["priority_models"]] == ["CBR600RR"]

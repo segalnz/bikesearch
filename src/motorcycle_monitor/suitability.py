@@ -124,6 +124,16 @@ def classify_broad(listing, config):
     requirements = search["requirements"]
     preferences = search.get("preferences", {})
     reject, unknown = [], []
+    from .locations import area_status
+
+    location_status = area_status(listing.location, search.get("allowed_locations", []))
+    if location_status == "outside":
+        reject.append(
+            "Outside the configured search area: "
+            + search.get("area_label", "configured towns")
+        )
+    elif location_status == "unknown":
+        unknown.append("Exact location within the configured area is unconfirmed")
     if (
         listing.evidence.get("vehicle_type") == "ATV"
         or "/quads-atvs/" in urlsplit(listing.canonical_url).path
@@ -329,6 +339,8 @@ def classify_broad(listing, config):
     candidate_status = (
         "excluded"
         if listing.classification == "REJECTED"
+        else "unassessed"
+        if location_status != "inside"
         else "supported"
         if minimum_power is None
         or (supported_power is not None and supported_power >= minimum_power)

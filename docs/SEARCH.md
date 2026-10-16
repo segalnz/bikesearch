@@ -17,7 +17,7 @@ Edit `config.bike-search.yaml`, then redeploy from the desktop with
 | Weather protection | — | Factory screen or half/full fairing |
 | Market | — | Model sold in USA |
 | Servicing | DIY suitability and obtainable English workshop documentation | — |
-| Location | New Zealand | Wellington / Lower North Island |
+| Location | Wellington–Palmerston North–Masterton corridor, including Hutt Valley, Kapiti and Horowhenua towns | — |
 
 The approximate 225 kg maximum is implemented as an inclusive numerical ceiling;
 change `requirements.max_wet_weight_kg` to adjust that tolerance. Dry weights
@@ -172,7 +172,7 @@ The broad preset enables ten independent source adapters: Trade Me, TSS,
 Cyclespot Wellington, Courtesy, Maidstone Yamaha, Langlands Honda, THS Moto,
 Colemans, Cooks Honda and Turners. These represent eight dealer sites and two
 marketplaces, not ten copies of the same Trade Me search. They include the
-preferred Wellington/Manawatu/Wairarapa area and nationwide stock. Source links
+Wellington/Manawatu/Wairarapa area and nationwide inventories. The hard town filter excludes stock outside the configured corridor; uncertain locations cannot enter the shortlist. Source links
 are retained, and ambiguous cross-site duplicates are not silently merged.
 Independent websites are always marked partial unless a complete adapter has
 proved otherwise. Public-page parser failures are visible in Collection health.
@@ -201,3 +201,32 @@ or local network blocks web search. The monitor distinguishes an app shell that
 needs standard browser rendering from an explicit challenge. Challenged sources
 are recorded as errors, suppressed for that scan, and other independent sites
 continue; the application never reports those failures as zero qualifying bikes.
+
+## Geographic eligibility and power research
+
+The broad preset now uses `coverage: regional` and an explicit `allowed_locations`
+list. Change that list to change the geographic boundary. Towns outside the list
+are excluded; missing or ambiguous regional locations remain unassessed. A
+regional suffix or delivery offer cannot admit a bike located elsewhere. Area
+changes invalidate the cached operational plan and immediately reclassify saved
+results, without waiting for each advertisement to be collected again.
+
+Engine power is visible on each card, labelled as an advert claim or manufacturer
+specification, with a source link for researched figures. Missing-power identified
+models can receive research even before qualifying for the candidate shortlist.
+Research prioritizes missing horsepower. It tries known manufacturer documents,
+public indexed discovery, then asks DeepSeek to identify the exact model/variant
+and propose alternate specification documents. Suggested pages are fetched from
+approved manufacturer hosts, and a second extraction must provide checkable
+model/year quotations and units. An LLM's remembered number alone is not a fact.
+Research budgets still apply; unresolved power is explicit and cannot establish
+a confirmed match. Successful power research is cached for 30 days; unresolved
+lookups retry after six hours. Research schema changes invalidate older caches.
+
+Current NZ CFMOTO references were checked on 16 October 2026: the
+[675NK](https://www.cfmoto.co.nz/model/675nk-nz) has rated output of 70 kW
+(93.9 mechanical hp), while the
+[500SR VOOM](https://www.cfmoto.co.nz/model/500sr-voom-nz) is rated at 58 kW
+(77.8 hp). The latter is below 80 hp; its higher ram-air figure does not replace
+rated output. These reviewed references apply to 2026 listings, not arbitrary
+model years, and never establish that an actual restricted bike is unrestricted.

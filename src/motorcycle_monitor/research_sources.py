@@ -64,6 +64,12 @@ def document_urls(listing):
                 urls.append(
                     f"https://cdn2.yamaha-motor.eu/prod/product-assets/{year}/{code}/Factsheets/{year}-{code}_en.pdf"
                 )
+    if "cfmoto" in title:
+        compact = re.sub(r"[^a-z0-9]", "", title)
+        if "675nk" in compact:
+            urls.append("https://www.cfmoto.co.nz/model/675nk-nz")
+        if "500sr" in compact:
+            urls.append("https://www.cfmoto.co.nz/model/500sr-voom-nz")
     return urls
 
 
@@ -134,6 +140,25 @@ REVIEWED_SEAT_HEIGHTS = (
 def reviewed_reference_facts(listing):
     from .search_plan import model_matches
 
+    facts = {}
+    # Reviewed current NZ specifications, scoped to the advertised model year.
+    # Use rated engine output, not the 500SR's higher ram-air figure.
+    for make, alias, year, kw, url in (
+        ("CFMOTO", "675NK", 2026, 70, "https://www.cfmoto.co.nz/model/675nk-nz"),
+        ("CFMOTO", "500SR", 2026, 58, "https://www.cfmoto.co.nz/model/500sr-voom-nz"),
+    ):
+        if listing.model_year == year and model_matches(listing, make, alias):
+            facts["power_hp"] = {
+                "value": round(kw * 1.34102209, 1),
+                "quotation": f"Maximum power: {kw}kW",
+                "source_url": url,
+                "model_quote": make + " " + alias,
+                "year_quote": str(year),
+                "kind": "manufacturer_research",
+                "checked_at": "2026-10-16",
+                "reviewed_reference": True,
+                "scope": "Current NZ manufacturer model specification, checked in 2026; actual restricted/modified variant requires confirmation",
+            }
     for make, aliases, year, height, url, quotation in REVIEWED_SEAT_HEIGHTS:
         if listing.model_year == year and any(
             model_matches(listing, make, alias) for alias in aliases
@@ -144,17 +169,19 @@ def reviewed_reference_facts(listing):
                 text,
                 re.I,
             ):
-                return {}
-            return {
-                "seat_height_mm": {
-                    "value": height,
-                    "quotation": quotation,
-                    "source_url": url,
-                    "model_quote": make + " " + aliases[0],
-                    "year_quote": str(year),
-                    "kind": "manufacturer_research",
-                    "checked_at": "2026-10-16",
-                    "reviewed_reference": True,
+                return facts
+            facts.update(
+                {
+                    "seat_height_mm": {
+                        "value": height,
+                        "quotation": quotation,
+                        "source_url": url,
+                        "model_quote": make + " " + aliases[0],
+                        "year_quote": str(year),
+                        "kind": "manufacturer_research",
+                        "checked_at": "2026-10-16",
+                        "reviewed_reference": True,
+                    }
                 }
-            }
-    return {}
+            )
+    return facts

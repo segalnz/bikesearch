@@ -67,40 +67,14 @@ def classify(listing: Listing, config: dict) -> Listing:
     ):
         if listing.model != "GSX-8R" or listing.engine_cc != 799:
             reasons.append("Engine capacity conflicts with model")
-    allowed = config["search"].get("allowed_locations", [])
-    location_unknown = False
-    if allowed:
-        raw_location = (listing.location or "").lower()
-        normalized = re.sub(r"[^a-z0-9]+", " ", raw_location).strip()
-        parts = [
-            re.sub(r"[^a-z0-9]+", " ", part).strip() for part in raw_location.split(",")
-        ]
-        generic_regions = {
-            "manawatu",
-            "manawatu whanganui",
-            "wairarapa",
-            "wellington region",
-        }
-        # A region suffix is not evidence that an unknown town lies inside the corridor.
-        towns = (
-            parts[:-1]
-            if len(parts) > 1 and parts[-1] in generic_regions | {"wellington"}
-            else parts
-        )
-        location_text = " ".join(towns)
-        locations = [
-            re.sub(r"[^a-z0-9]+", " ", place.lower()).strip() for place in allowed
-        ]
-        if not normalized or normalized in generic_regions:
-            location_unknown = True
-        elif not any(
-            re.search(r"(?<!\w)" + re.escape(place) + r"(?!\w)", location_text)
-            for place in locations
-        ):
-            if len(parts) > 1 and parts[-1] in generic_regions | {"wellington"}:
-                location_unknown = True
-            else:
-                reasons.append("Outside the configured search area")
+    from .locations import area_status
+
+    location_status = area_status(
+        listing.location, config["search"].get("allowed_locations", [])
+    )
+    location_unknown = location_status == "unknown"
+    if location_status == "outside":
+        reasons.append("Outside the configured search area")
     if reasons:
         listing.classification = "REJECTED"
         return listing

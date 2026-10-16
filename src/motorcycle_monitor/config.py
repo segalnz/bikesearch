@@ -117,6 +117,12 @@ def validate(config: dict) -> None:
         isinstance(place, str) and place.strip() for place in locations
     ):
         raise ValueError("allowed_locations must be a list of location names")
+    if (
+        config["search"].get("mode") == "all_models"
+        and config["search"].get("coverage") == "regional"
+        and not locations
+    ):
+        raise ValueError("Regional broad search requires allowed_locations")
     for section, keys in {
         "search": ("max_odometer_km",),
         "collector": (

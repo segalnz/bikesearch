@@ -9,7 +9,9 @@ The current `config.bike-search.yaml` searches all models: up to NZ$12,500,
 most 225 kg and seat height at most 825 mm. English workshop documentation and
 DIY servicing suitability require evidence. Preferences rank candidates: 2020+,
 under 15,000 km, **strictly under 210 kg wet**, seat at most 810 mm,
-factory screen/fairing, US-market models and Wellington/Lower North Island.
+factory screen/fairing and US-market models. Location is required: the
+Wellington–Palmerston North–Masterton corridor, including the Hutt Valley, Kapiti
+and Horowhenua towns. Unconfirmed locations stay out of the shortlist.
 Only bikes with supported power or a promising model identity enter Potential
 candidates. Other unresolved stock stays in Unassessed discoveries. Missing
 mandatory facts never establish a confirmed match; auction bids never establish

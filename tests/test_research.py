@@ -296,3 +296,74 @@ def test_modified_or_explicitly_lower_seat_requires_review(broad_config):
         item.description = claim
         classify(item, broad_config)
         assert item.classification == "REVIEW"
+
+
+def test_llm_source_fallback_resolves_power_when_search_is_empty(tmp_path, monkeypatch):
+    from motorcycle_monitor.research import EXTRACT, LOCATE
+
+    monkeypatch.setattr(
+        "motorcycle_monitor.research_sources.document_urls", lambda item: []
+    )
+    options = {"research_calls_per_scan": 3}
+    researcher = ModelResearcher(options, Pages(), tmp_path)
+    monkeypatch.setattr(researcher, "discover", lambda query: [])
+    calls = []
+
+    def chat(system, context):
+        calls.append(system)
+        if system == LOCATE:
+            return {
+                "power_hp_estimate": 999,
+                "sources": ["https://127.0.0.1/private", DOCS[0]["url"]],
+            }
+        assert system == EXTRACT
+        return {"facts": [FACT]}
+
+    monkeypatch.setattr(researcher, "chat", chat)
+    item = bike()
+    researcher.research(item)
+    fact = item.evidence["model_research"]["facts"]["power_hp"]
+    assert calls == [LOCATE, EXTRACT]
+    assert fact["value"] == 67.32  # Quoted kW conversion, never the guessed 999.
+    assert fact["source_url"] == DOCS[0]["url"]
+    duplicate = bike()
+    researcher.research(duplicate)
+    assert calls == [LOCATE, EXTRACT]
+    researcher.close()
+
+
+def test_unverifiable_llm_power_never_becomes_fact(tmp_path, monkeypatch):
+    monkeypatch.setattr(
+        "motorcycle_monitor.research_sources.document_urls", lambda item: []
+    )
+    researcher = ModelResearcher({}, Pages(), tmp_path)
+    monkeypatch.setattr(researcher, "discover", lambda query: [])
+    monkeypatch.setattr(
+        researcher,
+        "chat",
+        lambda *args: {
+            "power_hp_estimate": 120,
+            "sources": ["https://127.0.0.1/private"],
+        },
+    )
+    item = bike()
+    researcher.research(item)
+    assert item.evidence["model_research"]["facts"] == {}
+    assert researcher.fetcher.requests == 0
+    researcher.close()
+
+
+@pytest.mark.parametrize("model,power", [("675 NK", 93.9), ("500 SR VOOM", 77.8)])
+def test_current_nz_power_references_are_visible_and_scoped(broad_config, model, power):
+    item = bike()
+    item.title = "2026 CFMOTO " + model
+    item.model_year = 2026
+    classify(item, broad_config)
+    fact = item.evidence["suitability"]["facts"]["power_hp"]
+    assert fact["value"] == power
+    assert fact["source_url"].startswith("https://www.cfmoto.co.nz/model/")
+    if power < 80:
+        assert item.classification == "REJECTED"
+    item.model_year = 2024
+    classify(item, broad_config)
+    assert "power_hp" not in item.evidence["suitability"]["facts"]

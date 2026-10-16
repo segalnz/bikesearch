@@ -2,17 +2,13 @@
 search:
   max_price_nzd: 12500
   max_odometer_km: 25000
-  coverage: nationwide
+  coverage: regional
   preferred_regions:
   - Wellington
   - Hutt
   - Kapiti
   - Wairarapa
   - Manawatu
-  - Taranaki
-  - Hawke's Bay
-  - Hawkes Bay
-  - Whanganui
   - Horowhenua
   - Levin
   models: []
@@ -184,8 +180,44 @@ search:
       - used motorcycles New Zealand twin triple four cylinder ABS for sale {year}
       - used motorcycles NZ full power low kilometres fairing dealer under {price}
       - used motorcycles Lower North Island non LAMS sports touring for sale
-  area_label: New Zealand; Wellington / Lower North Island preferred
-  allowed_locations: []
+  area_label: Wellington to Palmerston North and Masterton
+  allowed_locations:
+  - Wellington
+  - Lower Hutt
+  - Upper Hutt
+  - Hutt Valley
+  - Porirua
+  - Kapiti
+  - Paraparaumu
+  - Raumati
+  - Waikanae
+  - Otaki
+  - Levin
+  - Foxton
+  - Shannon
+  - Longburn
+  - Linton
+  - Palmerston North
+  - Masterton
+  - Carterton
+  - Greytown
+  - Featherston
+  - Martinborough
+  - Petone
+  - Eastbourne
+  - Wainuiomata
+  - Pukerua Bay
+  - Paekakariki
+  - Tawa
+  - Johnsonville
+  - Karori
+  - Terrace End
+  - Trentham
+  - Silverstream
+  - Stokes Valley
+  - Whitby
+  - Plimmerton
+  - Mana
   mode: all_models
   min_year: 2017
   requirements:

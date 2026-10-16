@@ -66,4 +66,9 @@ def store(tmp_path):
 
 @pytest.fixture
 def broad_config():
-    return load_config(Path(__file__).resolve().parents[1] / "config.bike-search.yaml")
+    config = load_config(
+        Path(__file__).resolve().parents[1] / "config.bike-search.yaml"
+    )
+    config["search"]["allowed_locations"] = []
+    config["search"]["coverage"] = "nationwide"
+    return config
