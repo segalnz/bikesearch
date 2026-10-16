@@ -5,6 +5,9 @@
 - 227 offline tests pass. Planning tests cover one-call compilation, reuse after restart, criteria-based invalidation, model/variant boundaries, no capacity-only rule, deterministic evidence overriding estimates and a cloud-free dashboard read.
 - A live DeepSeek compilation produced 33 validated model-family screening rules and 24 priority models. Ninja 650 and Yamaha MT-07 were screened out; Honda CBR600RR (599 cc), Kawasaki ZX-6R (636 cc) and CBR650R survived. The plan is installed privately on the LXC for reuse, rather than asking the API again during deployment.
 - The saved plan is an operational heuristic and explicitly labelled as such. It cannot fabricate specification facts. Unknown models remain in discovery, and screened stock remains in All tracked.
+- Final release `0.3.1`, deployment `deec81e01b7e`, completed its fresh ten-source LXC scan. The installer verified 0 available confirmed matches and 599 available candidates needing review. Across saved inventory, 72 listings were screened by the plan and all eight listings with recorded power below 80 hp were rejected.
+- The live plan retained its original generation timestamp (`2026-10-16T00:50:47.293721+00:00`) and requirements fingerprint across deployment and scanning. Live desktop/mobile checks verified the plan panel, clear estimate labels, screened listings retained in All tracked, no JavaScript errors and no horizontal overflow.
+- [Planning release CI](https://github.com/segalnz/bikesearch/actions/runs/38832088506) passed on Python 3.11, 3.12 and 3.13 for application commit `4bcf2d9`. Published history was audited without credential findings.
 - Application release `0.3.0` / deployment `79b63469ce51` completed its fresh scan before this planning update. Manufacturer research CI passed on Python 3.11–3.13 for commit `f5a1230`.
 
 ## Manufacturer specification research — 16 October 2026
