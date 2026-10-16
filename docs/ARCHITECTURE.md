@@ -8,6 +8,8 @@ there is no distributed state or framework required for this workload.
 ```mermaid
 flowchart LR
     Timer[systemd timer / CLI] --> Scan[Application scan service]
+    Scan --> Plan[Cached requirements-to-search compiler]
+    Plan --> Rules
     Scan --> Sources[Public acquisition adapters]
     Sources --> Sites[Dealer sites / marketplaces / optional search API]
     Scan --> Rules[Deterministic eligibility and preference rules]
@@ -28,6 +30,7 @@ flowchart LR
 | Domain | `schema`, `normalization`, `classification`, `filtering`, `suitability`, `trade_in` | Evidence, eligibility, preferences and monetary calculations; no network or database calls |
 | Application | `service`, `scheduler`, `ports` | Scan lifecycle, locks, sequencing, resource ownership and injected adapter contracts |
 | Acquisition adapters | `collectors`, `parsers`, `dealers`, `browser`, `web_discovery`, `search` | Public HTTP/browser access and source-specific interpretation |
+| Operational planner | `search_plan` | One bounded requirements-to-plan compilation, persistent fingerprinted rules, literal model screening and candidate priorities |
 | Model research | `research`, `research_sources` | Manufacturer document discovery, bounded HTML/PDF acquisition, quoted structured extraction and model/year caching |
 | Advisory adapter | `reviewer`, `secrets` | Bounded DeepSeek requests, validation, caching and isolated credential loading |
 | Persistence/delivery | `storage`, `notifications` | Versioned SQLite storage, observations, source availability and MQTT outbox |
@@ -74,6 +77,17 @@ call limit, bounded payloads, a timeout, strict response/quotation validation an
 content/criteria/model-version caching. A failed review does not erase a listing
 or stop deterministic collection. It cannot execute commands, browse arbitrary
 URLs or change eligibility.
+
+**Compile an operational plan before researching individual models.** A single
+bounded DeepSeek call compiles the requirements into make/model/year screening
+rules, priorities and queries. A policy fingerprint, atomic private file and no
+expiry preserve the same plan until the requirements change. Acquisition applies
+screening before detail fetches; individual research handles the survivors.
+Model-family power ceilings remain labelled estimates, not fabricated facts.
+Literal aliases preserve identity suffixes, unknown models remain in discovery,
+and displacement-only rules cannot be expressed. The read-only dashboard loads
+the saved plan without API calls. A failed compiler leaves ordinary collection
+running.
 
 **Research documents before classifying missing specifications.** The separate
 `research` adapter discovers manufacturer sources, retrieves HTML/PDF documents and

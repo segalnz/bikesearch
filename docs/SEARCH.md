@@ -25,6 +25,40 @@ never substitute for wet weights. Preferences order candidates, with financial
 comparison next. Missing preferences do not exclude bikes. Missing mandatory
 facts produce **Needs review**, with a reason for each outstanding check.
 
+## Reusable operational plan
+
+Before acquiring individual bikes, the monitor asks DeepSeek to translate the main
+purchase requirements into a reusable plan: low-power model-family screening rules,
+promising models to prioritize, targeted queries and cautions about exceptions.
+It stores the validated result in `/var/lib/motorcycle-monitor/operational-plan.json`.
+The requirements fingerprint includes price, year, mileage, mandatory specifications,
+preferences and geographic intent. Routine scans, restarts, fresh HTTP scans,
+redeployments, credential changes and source-page limits reuse the same plan.
+Changing the main requirements makes the next scan compile a new plan. A missing
+or invalid plan is generated once; a failed compilation falls back to ordinary
+collection and can be retried on a later scan. No paid planner calls occur when
+reading the dashboard or CLI.
+
+Rules use literal make/model aliases and bounded model years. There is **no blanket
+650 cc cutoff**: high-output 599/600/636 cc four-cylinder sports bikes survive unless
+another requirement excludes them. Priorities are not a whitelist; unfamiliar models
+remain eligible for research. Screening is applied before costly advert details,
+model specification research and individual advisory calls. Indexed provider adapters
+also use the plan's queries when enabled. Detailed research is reserved for remaining
+candidates, with an eight-call/120-second research budget and four advisory calls per
+scan in the preset.
+
+The dashboard's **Saved operational search plan** panel exposes the stored rules,
+priorities and cautions. `motorcycle-monitor --config /etc/motorcycle-monitor/config.yaml
+search-plan` prints a readable copy; `--json` returns the stored structure. A plan's
+power ceilings are explicitly **LLM estimates**, not manufacturer-verified facts.
+Screened bikes remain under **All tracked** with that distinction in their reason.
+An explicit supported power figure overrides a family estimate, and independently
+researched power below the minimum remains a deterministic exclusion. Set
+`llm.plan_enabled: false` to turn heuristic screening off.
+
+## Manufacturer specification research
+
 Advert extraction is supplemented by model/year research from fetched manufacturer
 specifications. A supported figure below 80 hp excludes a bike even when the advert
 omits power. `requirements.min_power_hp` controls this mandatory minimum. Conflicting
@@ -47,7 +81,7 @@ review reasons. The archive index is a source-location aid, not an exhaustive mo
 catalogue. Public index challenges, irrelevant results and unavailable archives can
 leave models unresolved.
 
-The preset allows 32 research API calls and 300 seconds for the research stage (including retrieval) per scan,
+The preset allows eight research API calls and 120 seconds for the research stage (including retrieval) per scan,
 with 60 separate paced HTTP requests for research. Collection retains its own
 request budget. Results are cached by model-title identity, year and engine size
 in `model-cache`: supported findings for 30 days, unresolved findings for seven days.
@@ -97,7 +131,7 @@ manual availability never automatically satisfy a mandatory requirement. Quoted
 advert passages must exactly match the supplied advert; unsupported quotations
 are removed from the advisory, and malformed candidate responses are isolated. AI cannot override deterministic exclusions.
 
-The preset allows at most 8 advisory calls and 180 cumulative API seconds are allowed per scan. Unchanged advert/criteria/model combinations
+The preset allows at most 4 advisory calls and 180 cumulative API seconds are allowed per scan. Unchanged advert/criteria/model combinations
 reuse `/var/lib/motorcycle-monitor/ai-cache`; changed adverts or preferences get
 new reviews. Credential/API connection errors stop further review calls for that scan; a
 malformed candidate response affects only that candidate. Both leave collection

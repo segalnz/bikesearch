@@ -1,5 +1,12 @@
 # Verification history
 
+## Reusable operational planning — 16 October 2026
+
+- 227 offline tests pass. Planning tests cover one-call compilation, reuse after restart, criteria-based invalidation, model/variant boundaries, no capacity-only rule, deterministic evidence overriding estimates and a cloud-free dashboard read.
+- A live DeepSeek compilation produced 33 validated model-family screening rules and 24 priority models. Ninja 650 and Yamaha MT-07 were screened out; Honda CBR600RR (599 cc), Kawasaki ZX-6R (636 cc) and CBR650R survived. The plan is installed privately on the LXC for reuse, rather than asking the API again during deployment.
+- The saved plan is an operational heuristic and explicitly labelled as such. It cannot fabricate specification facts. Unknown models remain in discovery, and screened stock remains in All tracked.
+- Application release `0.3.0` / deployment `79b63469ce51` completed its fresh scan before this planning update. Manufacturer research CI passed on Python 3.11–3.13 for commit `f5a1230`.
+
 ## Manufacturer specification research — 16 October 2026
 
 - 202 offline tests pass, with Ruff lint/format and JavaScript syntax checks.

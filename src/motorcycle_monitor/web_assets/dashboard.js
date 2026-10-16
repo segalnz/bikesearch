@@ -156,7 +156,11 @@ function card(item) {
         ),
       );
     for (const [field, fact] of Object.entries(suitability.facts || {})) {
-      const row = el("p", null, field.replaceAll("_", " ") + ": " + fact.value + " — " + fact.quotation);
+      const row = el(
+        "p",
+        null,
+        field.replaceAll("_", " ") + ": " + fact.value + " — " + fact.quotation,
+      );
       if (fact.source_url) {
         try {
           const url = new URL(fact.source_url);
@@ -167,12 +171,21 @@ function card(item) {
             link.rel = "noopener noreferrer";
             row.append(link);
           }
-        } catch { /* Invalid evidence links are not rendered. */ }
+        } catch {
+          /* Invalid evidence links are not rendered. */
+        }
       }
       panel.append(row);
     }
     const research = item.evidence?.model_research;
-    if (research) panel.append(el("p", null, "Model research: " + research.status + ". " + research.note));
+    if (research)
+      panel.append(
+        el(
+          "p",
+          null,
+          "Model research: " + research.status + ". " + research.note,
+        ),
+      );
     panel.append(el("p", null, suitability.note));
     node.append(panel);
   }
@@ -318,8 +331,57 @@ function card(item) {
 }
 function render() {
   const listings = state.listings || [];
+  const plan = state.operational_plan;
+  const planPanel = document.querySelector("#operational-plan");
+  planPanel.hidden = plan?.status !== "ready";
+  const planContent = document.querySelector("#operational-plan-content");
+  planContent.replaceChildren();
+  if (plan?.status === "ready") {
+    planContent.append(
+      el("p", null, plan.summary),
+      el(
+        "p",
+        null,
+        "Generated " +
+          when(plan.generated_at) +
+          ". Reused until your requirements change. Screening rules are LLM estimates; specifications remain separate.",
+      ),
+    );
+    for (const rule of plan.rules || [])
+      planContent.append(
+        el(
+          "p",
+          null,
+          "Screen out: " +
+            rule.make +
+            " " +
+            rule.models.join(" / ") +
+            " (" +
+            rule.year_min +
+            "–" +
+            rule.year_max +
+            "), estimated maximum " +
+            rule.power_hp_upper +
+            " hp. " +
+            rule.reason,
+        ),
+      );
+    planContent.append(
+      el(
+        "p",
+        null,
+        "Prioritize: " +
+          (plan.priority_models || [])
+            .map((item) => item.make + " " + item.model)
+            .join(", "),
+      ),
+    );
+    for (const caution of plan.cautions || [])
+      planContent.append(el("p", null, caution));
+  }
   if (state.criteria_summary)
-    document.querySelector("#criteria").textContent = state.criteria_summary.join(" · ");
+    document.querySelector("#criteria").textContent =
+      state.criteria_summary.join(" · ");
   document.querySelector("#count-matches").textContent = listings.filter(
     (item) => active(item) && item.classification === "ACCEPTED",
   ).length;

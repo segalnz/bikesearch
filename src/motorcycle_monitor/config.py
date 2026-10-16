@@ -148,6 +148,10 @@ def validate(config: dict) -> None:
         raise ValueError("Only max_concurrency: 1 is supported")
     if config["collector"]["mode"] not in {"http", "auto"}:
         raise ValueError("Only HTTP acquisition is implemented")
+    if type(config["llm"].get("plan_enabled", False)) is not bool:
+        raise ValueError("llm.plan_enabled must be boolean")
+    if config["llm"].get("plan_enabled") and not config["llm"].get("enabled"):
+        raise ValueError("Operational planning requires llm.enabled")
     if config["llm"].get("research_enabled", False):
         if not config["llm"]["enabled"]:
             raise ValueError("Model research requires llm.enabled")

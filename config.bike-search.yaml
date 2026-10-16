@@ -240,10 +240,11 @@ llm:
   provider: deepseek
   model: deepseek-flash
   api_key_file: /etc/motorcycle-monitor/deepseek.token
-  max_calls_per_scan: 8
+  max_calls_per_scan: 4
+  plan_enabled: true
   research_enabled: true
-  research_calls_per_scan: 32
-  research_seconds: 300
+  research_calls_per_scan: 8
+  research_seconds: 120
 availability:
   missing_scans: 2
   minimum_hours_between_misses: 12

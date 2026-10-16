@@ -21,6 +21,7 @@ def dashboard_metadata(config: dict) -> dict:
     """Expose only presentation-safe settings; never return the full configuration."""
     return {
         "criteria_summary": describe_search(config["search"]),
+        "operational_plan": config["search"].get("_operational_plan"),
         "generated_at": utc_now(),
         "refresh_seconds": config.get("web", {}).get("refresh_seconds", 60),
         "mqtt_enabled": config["mqtt"]["enabled"],
@@ -47,6 +48,10 @@ def dashboard_metadata(config: dict) -> dict:
 
 
 def snapshot(config: dict) -> dict:
+    from .search_plan import read_plan
+
+    plan = read_plan(config)
+    config["search"]["_operational_plan"] = plan or {}
     path = config["database"]["path"]
     if not Path(path).exists():
         return {

@@ -65,6 +65,10 @@ def parser() -> argparse.ArgumentParser:
     web = sub.add_parser("serve", help="Serve the read-only desktop dashboard")
     web.add_argument("--host", help="Listen address (default: 0.0.0.0)")
     web.add_argument("--port", type=int, help="Listen port (default: 8765)")
+    plan = sub.add_parser(
+        "search-plan", help="Display the stored operational search plan"
+    )
+    plan.add_argument("--json", action="store_true")
     sub.add_parser("status")
     sub.add_parser("validate-config")
     sub.add_parser("test-mqtt")
@@ -109,11 +113,22 @@ def main(argv: list[str] | None = None) -> int:
     args = parser().parse_args(argv)
     try:
         config = load_config(args.config)
+        if config["search"].get("mode") == "all_models":
+            from .search_plan import read_plan
+
+            config["search"]["_operational_plan"] = read_plan(config) or {}
         handlers = [logging.StreamHandler()]
         if (
             config["logging"]["path"]
             and args.command
-            not in {"validate-config", "status", "listings", "history", "changeover"}
+            not in {
+                "validate-config",
+                "status",
+                "listings",
+                "history",
+                "changeover",
+                "search-plan",
+            }
             and not (args.command == "scan" and args.dry_run)
         ):
             Path(config["logging"]["path"]).parent.mkdir(parents=True, exist_ok=True)
@@ -144,6 +159,36 @@ def main(argv: list[str] | None = None) -> int:
                     ],
                 }
             )
+            return 0
+        if args.command == "search-plan":
+            from .search_plan import read_plan
+
+            plan = read_plan(config)
+            if args.json:
+                output(
+                    plan or {"status": "No current plan; the next scan generates one."}
+                )
+            elif not plan:
+                print(
+                    "No current operational plan. The next scan generates one when enabled."
+                )
+            else:
+                print(plan["summary"])
+                print("\nStored plan: " + plan["generated_at"])
+                print("Screening rules are LLM estimates, not verified specifications.")
+                for rule in plan["rules"]:
+                    print(
+                        f"  Screen out {rule['make']} {' / '.join(rule['models'])} ({rule['year_min']}–{rule['year_max']}): expected at most {rule['power_hp_upper']:g} hp. {rule['reason']}"
+                    )
+                print(
+                    "\nPrioritize: "
+                    + "; ".join(
+                        item["make"] + " " + item["model"]
+                        for item in plan["priority_models"]
+                    )
+                )
+                for caution in plan["cautions"]:
+                    print("  Note: " + caution)
             return 0
         if args.command == "scan":
             if args.fresh:

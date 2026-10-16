@@ -13,6 +13,7 @@ from bs4 import BeautifulSoup
 from .filtering import classify
 from .normalization import safe_url
 from .parsers import ParseError, parse
+from .search_plan import preferred_model
 
 
 class CollectionError(RuntimeError):
@@ -395,6 +396,7 @@ def collect_broad_trademe(source, options, fetcher, config):
     candidates.sort(
         key=lambda x: (
             x.classification == "REJECTED",
+            not preferred_model(x, config["search"]),
             x.power_status != "UNRESTRICTED",
             not any(
                 region.lower() in (x.location or "").lower()

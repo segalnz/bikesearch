@@ -33,7 +33,10 @@ virtualenv is unnecessary: the script uses the LXC's installed virtualenv.
 Edit **config.bike-search.yaml locally** for future broad-search changes, then
 run the same command. The preset manages price, mileage, years, models and
 location criteria. The broad preset also replaces old model-specific source URLs
-and enables bounded DeepSeek reviews. Select it once with
+and enables a cached operational search plan, bounded specification research and
+advisory reviews. The plan lives in `/var/lib/motorcycle-monitor/operational-plan.json`
+and survives redeployment; changed purchase requirements trigger recompilation on
+the next scan. The dashboard exposes the saved rules. Select it once with
 `./scripts/redeploy.sh --preset config.bike-search.yaml`; subsequent runs remember
 it. Narrow presets retain manually checked source URLs. See [search criteria](SEARCH.md).
 To select another preset or change the target (these choices are saved):

@@ -84,6 +84,22 @@ def _scan(
         config["collector"],
         None if dry_run else Path(config["database"]["path"]).parent / "http-cache",
     )
+    if config["search"].get("mode") == "all_models" and config["llm"].get(
+        "plan_enabled"
+    ):
+        from .search_plan import compile_plan
+
+        plan = compile_plan(config, persist=not dry_run)
+        if plan:
+            # The policy fingerprint deliberately excludes this compiled artefact.
+            config["search"]["_operational_plan"] = plan
+            if plan.get("status") == "ready" and plan.get("queries"):
+                for options in config["search"]["sources"].values():
+                    if (
+                        options.get("enabled")
+                        and options.get("parser") == "indexed_search"
+                    ):
+                        options["queries"] = plan["queries"]
     baseline_event_id = str(uuid.uuid4())
     results = {"dry_run": dry_run, "sources": {}, "errors": []}
     owned_reviewer = reviewer is None
@@ -155,11 +171,13 @@ def _scan(
                 listings = [classify(x, config) for x in listings]
                 if researcher:
                     from .research_sources import document_urls
+                    from .search_plan import preferred_model
 
                     researcher.source_attempts = 0
                     for listing in sorted(
                         listings,
                         key=lambda x: (
+                            not preferred_model(x, config["search"]),
                             not bool(document_urls(x)),
                             x.power_status != "UNRESTRICTED",
                             -x.evidence.get("suitability", {}).get(

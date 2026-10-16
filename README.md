@@ -34,6 +34,9 @@ and partial discovery never marks unseen bikes unavailable. A transactional MQTT
 outbox supports delivery retries. Model/year research retrieves manufacturer HTML
 and PDF specifications, validates quoted facts and applies deterministic limits.
 Researched power under 80 hp excludes a bike even if its advert omits horsepower.
+A saved LLM operational plan screens low-power model families before detail lookups
+and prioritizes likely candidates. It is reused until the purchase requirements
+change; the dashboard exposes its rules separately from researched specifications.
 Separate optional DeepSeek guidance helps investigate unresolved requirements. Optional Brave or
 Tavily indexed search needs its own provider key; direct dealer browsing does not.
 

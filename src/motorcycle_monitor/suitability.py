@@ -293,6 +293,17 @@ def classify_broad(listing, config):
             region.lower() in location.lower() for region in search["preferred_regions"]
         ),
     )
+    from .search_plan import screen
+
+    screening = screen(listing, search, facts)
+    if screening:
+        reject.append(
+            f"Operational plan screening (LLM estimate): {screening['rule']} has expected power below {requirements['min_power_hp']:g} hp. "
+            + screening["reason"]
+        )
+        listing.evidence["operational_screen"] = screening
+    else:
+        listing.evidence.pop("operational_screen", None)
     listing.rejection_reasons = reject + unknown
     listing.classification = (
         "REJECTED" if reject else "REVIEW" if unknown else "ACCEPTED"
