@@ -308,7 +308,21 @@ def classify_broad(listing, config):
     listing.classification = (
         "REJECTED" if reject else "REVIEW" if unknown else "ACCEPTED"
     )
+    from .search_plan import preferred_model
+
+    supported_power = facts.get("power_hp", {}).get("value")
+    candidate_status = (
+        "excluded"
+        if listing.classification == "REJECTED"
+        else "supported"
+        if minimum_power is None
+        or (supported_power is not None and supported_power >= minimum_power)
+        else "promising"
+        if preferred_model(listing, search)
+        else "unassessed"
+    )
     listing.evidence["suitability"] = {
+        "candidate_status": candidate_status,
         "facts": facts,
         "preferences": assessments,
         "preference_matches": sum(
@@ -368,3 +382,12 @@ def describe_search(search: dict) -> list[str]:
         if required["diy_serviceable"]:
             parts.append("DIY servicing suitability required")
     return parts
+
+
+def is_candidate(listing):
+    """Positive selection; unknown discoveries are retained outside the shortlist."""
+    return (
+        listing.classification != "REJECTED"
+        and listing.evidence.get("suitability", {}).get("candidate_status")
+        != "unassessed"
+    )

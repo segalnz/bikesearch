@@ -242,3 +242,162 @@ def test_dashboard_reads_plan_without_cloud_calls(tmp_path, monkeypatch, broad_c
     assert result["operational_plan"]["fingerprint"] == cached["fingerprint"]
     assert not (tmp_path / "listings.db").exists()
     client.close()
+
+
+def capacity_plan(search):
+    raw = copy.deepcopy(RAW)
+    raw["capacity_rules"] = [
+        {
+            "name": "Ordinary small engines",
+            "max_engine_cc": 250,
+            "power_hp_upper": 75,
+            "confidence": "high",
+            "reason": "Stock small engines fall below 80 hp; performance exceptions require investigation.",
+        }
+    ]
+    return {
+        **validate_plan(raw, search),
+        "status": "ready",
+        "fingerprint": policy_fingerprint(search),
+    }
+
+
+@pytest.mark.parametrize(
+    "title,cc",
+    [
+        ("2026 Honda NSC110 Dio", 110),
+        ("2026 Yamaha TTR50", 50),
+        ("2026 Honda CRF50", 50),
+        ("2027 Kawasaki KLX110", 110),
+        ("2026 Yamaha AG125", 125),
+        ("2023 Suzuki UZ50", 49),
+        ("2025 Unfamiliar manufacturer commuter", 125),
+    ],
+)
+def test_small_stock_engines_are_excluded_without_per_model_lookup(
+    broad_config, title, cc
+):
+    broad_config["search"]["_operational_plan"] = capacity_plan(broad_config["search"])
+    item = listing(title)
+    item.engine_cc = cc
+    classify(item, broad_config)
+    assert item.classification == "REJECTED"
+    assert item.evidence["suitability"]["candidate_status"] == "excluded"
+    assert item.evidence["operational_screen"]["verified"] is False
+
+
+@pytest.mark.parametrize(
+    "description",
+    [
+        "Two-stroke racing motorcycle",
+        "Grand Prix racing motorcycle",
+        "Turbo modified engine",
+        "Engine swap",
+    ],
+)
+def test_unusual_small_engines_are_retained_for_investigation(
+    broad_config, description
+):
+    broad_config["search"]["_operational_plan"] = capacity_plan(broad_config["search"])
+    item = listing("2020 Unfamiliar 250 racer", description=description)
+    item.engine_cc = 250
+    classify(item, broad_config)
+    assert item.classification == "REVIEW"
+    assert item.evidence["suitability"]["candidate_status"] == "unassessed"
+
+
+def test_explicit_high_power_small_engine_survives_capacity_estimate(broad_config):
+    broad_config["search"]["_operational_plan"] = capacity_plan(broad_config["search"])
+    item = listing("2020 Unfamiliar 250 racer", description="90 hp non-LAMS")
+    item.engine_cc = 250
+    classify(item, broad_config)
+    assert item.classification == "REVIEW"
+    assert item.evidence["suitability"]["candidate_status"] == "supported"
+
+
+@pytest.mark.parametrize("cc", [None, 0, 251, 399, 599, 636, 649])
+def test_capacity_screen_cannot_become_650cc_cutoff(broad_config, cc):
+    search = broad_config["search"]
+    search["_operational_plan"] = capacity_plan(search)
+    item = listing("2020 Unfamiliar high output model")
+    item.engine_cc = cc
+    assert screen(item, search, {}) is None
+
+
+def test_unsafe_capacity_rule_is_discarded(broad_config):
+    raw = copy.deepcopy(RAW)
+    raw["capacity_rules"] = [
+        {
+            "name": "Wrong cutoff",
+            "max_engine_cc": 650,
+            "power_hp_upper": 75,
+            "confidence": "high",
+            "reason": "Incorrect generalisation",
+        }
+    ]
+    assert not validate_plan(raw, broad_config["search"])["capacity_rules"]
+
+
+def test_named_alias_without_digits_is_not_discarded(broad_config):
+    raw = copy.deepcopy(RAW)
+    raw["rules"][0].update(make="Honda", models=["NSC110", "Dio", "Ninja.*"])
+    result = validate_plan(raw, broad_config["search"])
+    assert result["rules"][0]["models"] == ["NSC110", "Dio"]
+
+
+def test_unrecognised_discovery_is_not_promoted_to_potential_candidate(broad_config):
+    item = classify(listing("2020 Unknown maker unknown model"), broad_config)
+    assert item.classification == "REVIEW"
+    assert item.evidence["suitability"]["candidate_status"] == "unassessed"
+    broad_config["search"]["_operational_plan"] = plan(broad_config["search"])
+    item = classify(listing("2020 Honda CBR600RR"), broad_config)
+    assert item.evidence["suitability"]["candidate_status"] == "promising"
+
+
+def test_unknown_discoveries_do_not_consume_cloud_research_budget(
+    monkeypatch, broad_config
+):
+    from motorcycle_monitor.collectors import Fetcher
+    from motorcycle_monitor.service import scan
+
+    calls = []
+
+    class Researcher:
+        def __init__(self, *args, **kwargs):
+            pass
+
+        def research(self, item):
+            calls.append(("research", item.title))
+
+        def close(self):
+            pass
+
+    class Reviewer:
+        def review(self, item, search):
+            calls.append(("advisory", item.title))
+
+        def close(self):
+            pass
+
+    monkeypatch.setattr("motorcycle_monitor.research.ModelResearcher", Researcher)
+    monkeypatch.setattr(
+        "motorcycle_monitor.search_plan.compile_plan",
+        lambda *args, **kwargs: capacity_plan(broad_config["search"]),
+    )
+    unknown = listing("2020 Unknown 450")
+    dio = listing("2026 Honda NSC110 Dio")
+    dio.engine_cc = 110
+    supported = listing("2020 Example road bike", description="Non-LAMS 90 hp")
+    monkeypatch.setattr(
+        "motorcycle_monitor.service.collect", lambda *args: [unknown, dio, supported]
+    )
+    broad_config["search"]["sources"] = {
+        "trademe": broad_config["search"]["sources"]["trademe"]
+    }
+    fetcher = Fetcher(broad_config["collector"])
+    try:
+        result = scan(broad_config, dry_run=True, fetcher=fetcher, reviewer=Reviewer())
+        assert not result["errors"]
+        assert calls == [("research", supported.title), ("advisory", supported.title)]
+    finally:
+        fetcher.close()

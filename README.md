@@ -10,7 +10,10 @@ most 225 kg and seat height at most 825 mm. English workshop documentation and
 DIY servicing suitability require evidence. Preferences rank candidates: 2020+,
 under 15,000 km, **strictly under 210 kg wet**, seat at most 810 mm,
 factory screen/fairing, US-market models and Wellington/Lower North Island.
-Unknown mandatory facts go to review; auction bids never establish purchase price.
+Only bikes with supported power or a promising model identity enter Potential
+candidates. Other unresolved stock stays in Unassessed discoveries. Missing
+mandatory facts never establish a confirmed match; auction bids never establish
+purchase price.
 
 ## Try the offline showcase
 

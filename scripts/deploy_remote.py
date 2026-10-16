@@ -307,11 +307,20 @@ def deploy(staging: Path, preset_name: str, revision: str) -> None:
         for item in result["listings"]
     )
     reviews = sum(
-        item["classification"] == "REVIEW" and item["listing_status"] == "ACTIVE"
+        item["classification"] == "REVIEW"
+        and item["listing_status"] == "ACTIVE"
+        and item.get("evidence", {}).get("suitability", {}).get("candidate_status")
+        != "unassessed"
+        for item in result["listings"]
+    )
+    unassessed = sum(
+        item["listing_status"] == "ACTIVE"
+        and item.get("evidence", {}).get("suitability", {}).get("candidate_status")
+        == "unassessed"
         for item in result["listings"]
     )
     print(
-        f"Verified dashboard: {matches} available matches, {reviews} needing review. Deployment {revision}.",
+        f"Verified dashboard: {matches} available matches, {reviews} candidates needing review, {unassessed} unassessed discoveries. Deployment {revision}.",
         flush=True,
     )
 

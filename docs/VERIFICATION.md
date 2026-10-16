@@ -1,5 +1,13 @@
 # Verification history
 
+## Candidate precision correction — 16 October 2026
+
+- The reported 2026 Honda NSC110 Dio exposed a selection defect: a short exclusion list left unidentified stock in REVIEW, and the dashboard treated every REVIEW as a potential candidate. The previous count was not a count of suitable models.
+- The inventory audit found 280 machines of 250 cc or less among 615 review records. Replay through the corrected plan rejected all three Dio examples and left no ordinary small-engine machine in the positively selected group.
+- Operational plan schema 2 adds bounded ordinary-small-engine screening, preserves explicit high-output/racing/tuning exceptions, accepts specific named aliases such as Dio, discards unsafe generic family prefixes and removes contradictory priorities. The refreshed plan has 48 model-family rules and three bounded capacity predicates.
+- Potential candidates require supported horsepower or a promising model identity. Other discoveries are retained separately and consume no individual cloud research/advisory calls. Confirmed matches still require every mandatory fact.
+- 250 offline tests pass, including the reported Dio, unfamiliar small commuters, children's bikes, 600/636 cc sports-bike preservation, racing/high-output exceptions, named aliases and research-budget selection. Browser checks verified candidate/review/unassessed/all views, no JavaScript errors and mobile layout.
+
 ## Reusable operational planning — 16 October 2026
 
 - 227 offline tests pass. Planning tests cover one-call compilation, reuse after restart, criteria-based invalidation, model/variant boundaries, no capacity-only rule, deterministic evidence overriding estimates and a cloud-free dashboard read.

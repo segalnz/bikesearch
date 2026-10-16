@@ -1,8 +1,9 @@
 """Compile purchase requirements once into reusable, transparent LLM screening.
 
 An operational plan is a heuristic, not manufacturer specification evidence.
-Only literal model-family rules can screen bikes; there is no displacement-only
-shortcut. Confirmed advert/research power and conflicting identities take priority.
+Literal model rules and bounded ordinary-small-engine estimates screen stock bikes.
+There is no blanket 650cc cutoff. Explicit high output and racing/tuning exceptions
+take priority over heuristic screening.
 """
 
 import hashlib
@@ -17,7 +18,7 @@ import httpx
 from .normalization import utc_now
 from .secrets import credential
 
-VERSION = 1
+VERSION = 2
 POLICY_KEYS = (
     "min_year",
     "max_price_nzd",
@@ -29,7 +30,7 @@ POLICY_KEYS = (
 )
 SYSTEM = """You are compiling a reusable operational motorcycle search plan for New Zealand.
 Input is purchase requirements, not individual advertisements. Return JSON only:
-{"summary":"brief operational strategy", "rules":[
+{"summary":"brief operational strategy", "capacity_rules":[{"name":"Ordinary small stock engines", "max_engine_cc":250,"power_hp_upper":75,"confidence":"high","reason":"Ordinary stock 250cc-or-smaller engines fall below 80 hp; racing/tuned exceptions must remain for investigation."}], "rules":[
 {"name":"family", "make":"Yamaha", "models":["MT-07","XSR700"],
 "year_min":2017,"year_max":2026,"action":"screen_out",
 "confidence":"high","power_hp_upper":76,
@@ -37,7 +38,26 @@ Input is purchase requirements, not individual advertisements. Return JSON only:
 "priority_models":[{"make":"Honda","model":"CBR650R","reason":"promising power/weight/seat; confirm NZ variant"}],
 "queries":["Honda CBR650R non LAMS ABS New Zealand used"],
 "cautions":["599/600/636 cc four-cylinder supersports can exceed 80 hp; never reject by cc alone"]}.
-Produce up to 35 HIGH-CONFIDENCE low-power model-family rules covering common NZ stock.
+Produce up to 50 HIGH-CONFIDENCE low-power model-family rules covering common NZ stock.
+Do not overlook scooters, minibikes, children's bikes, farm/trail bikes and singles:
+Honda NSC110/Dio/PCX/Forza, Yamaha PW/TTR/WR/XT/NMAX/XMAX, Honda CRF/XR,
+Suzuki DR/DR-Z/Burgman, Kawasaki KLX/KX, KTM EXC/SX/Adventure singles. Group
+related low-power models in a rule rather than spending all rules on individual models.
+For an 80 hp minimum, provide at least one capacity_rules entry for a conservative
+ordinary-stock threshold (choose e.g. 125, 150 or 250 cc). max_engine_cc must be an
+INTEGER and power_hp_upper a NUMBER STRICTLY BELOW 80. A threshold of 80 hp does
+not screen anything and is invalid. Racing/two-stroke/tuned exceptions are handled
+by the runtime. Do not omit a safe 125 cc ordinary-stock rule just because exceptional
+racing engines exist. Do not put excluded models in priority_models.
+Generic letter prefixes (PW, TTR, CRF, XR, DR, DR-Z, KLX, KX, EXC, SX) do NOT
+match numbered models: explicitly enumerate complete aliases, e.g. CRF50F, CRF110F,
+CRF125F, CRF150F, CRF230F, CRF250L, CRF450R. CRF1000/1100 Africa Twin is a HIGH
+POWER exception: never exclude all Honda CRF models as one unqualified family.
+Include a general capacity_rules predicate only when safely below the mandatory
+power threshold. max_engine_cc MUST be at most 250, never a 650cc cutoff. Capacity
+screening is heuristic and must exempt explicit high-power/racing/tuned machines.
+Specific named aliases WITHOUT digits (such as Honda Dio) are valid; ambiguous
+families spanning high-power models (such as Ninja, Duke, GSX) are not.
 Each rule must identify a make and LITERAL, specific model aliases; never wildcard/regex,
 blanket displacement cutoffs, generic '600', '650', 'Ninja', 'CB', 'GSX', or engine-size-only groups.
 A screen_out rule is allowed ONLY when every stock full-power variant in its year scope
@@ -66,13 +86,48 @@ def policy_fingerprint(search):
     ).hexdigest()
 
 
+GENERIC_MODELS = {
+    "ninja",
+    "gsx",
+    "cb",
+    "cbr",
+    "mt",
+    "motorcycle",
+    "bike",
+    "scooter",
+    "road",
+    "sport",
+    "enduro",
+    "trail",
+    "adventure",
+    "duke",
+    "tracer",
+    "scrambler",
+    "street",
+    "tiger",
+    "monster",
+    "crf",
+    "xr",
+    "dr",
+    "dr-z",
+    "klx",
+    "kx",
+    "exc",
+    "sx",
+    "pw",
+    "ttr",
+    "wr",
+    "xt",
+}
+
+
 def literal_model(value):
     return (
         isinstance(value, str)
         and 3 <= len(value) <= 45
         and bool(re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9 /-]*", value))
         and bool(re.search(r"[a-z]", value, re.I))
-        and bool(re.search(r"\d", value))
+        and value.lower().strip() not in GENERIC_MODELS
     )
 
 
@@ -86,11 +141,16 @@ def validate_plan(value, search):
         raise ValueError("Invalid operational plan lists")
     rules = []
     minimum = search.get("requirements", {}).get("min_power_hp")
-    for rule in value["rules"][:35]:
+    for rule in value["rules"][:50]:
         if not isinstance(rule, dict):
             continue
         make = rule.get("make")
-        models = rule.get("models")
+        raw_models = rule.get("models")
+        models = (
+            [model for model in raw_models if literal_model(model)]
+            if isinstance(raw_models, list)
+            else []
+        )
         lower, upper = rule.get("year_min"), rule.get("year_max")
         ceiling = rule.get("power_hp_upper")
         if (
@@ -100,7 +160,7 @@ def validate_plan(value, search):
             or not re.fullmatch(r"[A-Za-z][A-Za-z -]{1,30}", make)
             or not isinstance(models, list)
             or not models
-            or len(models) > 20
+            or len(models) > 30
             or not all(literal_model(model) for model in models)
             or type(lower) is not int
             or type(upper) is not int
@@ -139,7 +199,48 @@ def validate_plan(value, search):
                     "reason": item["reason"][:500],
                 }
             )
+    excluded_aliases = {
+        (rule["make"].lower(), re.sub(r"[^a-z0-9]", "", alias.lower()))
+        for rule in rules
+        for alias in rule["models"]
+    }
+    priorities = [
+        item
+        for item in priorities
+        if (item["make"].lower(), re.sub(r"[^a-z0-9]", "", item["model"].lower()))
+        not in excluded_aliases
+    ]
+    capacity_rules = []
+    for rule in (
+        value.get("capacity_rules", [])[:4]
+        if isinstance(value.get("capacity_rules", []), list)
+        else []
+    ):
+        if not isinstance(rule, dict):
+            continue
+        cc, ceiling = rule.get("max_engine_cc"), rule.get("power_hp_upper")
+        if (
+            type(cc) is int
+            and 0 < cc <= 250
+            and type(ceiling) in (int, float)
+            and minimum is not None
+            and 0 < ceiling < minimum
+            and rule.get("confidence") == "high"
+            and isinstance(rule.get("reason"), str)
+        ):
+            capacity_rules.append(
+                {
+                    "name": str(rule.get("name", "Small stock engines"))[:100],
+                    "max_engine_cc": cc,
+                    "power_hp_upper": ceiling,
+                    "confidence": "high",
+                    "reason": rule["reason"][:500],
+                }
+            )
     return {
+        "capacity_rules": sorted(
+            capacity_rules, key=lambda rule: rule["max_engine_cc"]
+        ),
         "summary": value["summary"][:1000],
         "rules": rules,
         "priority_models": priorities,
@@ -189,7 +290,7 @@ def compile_plan(config, *, persist=True, client=None):
     if not config["llm"].get("enabled") or not config["llm"].get("plan_enabled"):
         return None
     owned = client is None
-    client = client or httpx.Client(timeout=90, follow_redirects=False)
+    client = client or httpx.Client(timeout=120, follow_redirects=False)
     phase = "credential"
     try:
         secret = credential("DEEPSEEK_API_KEY", config["llm"]["api_key_file"])
@@ -201,7 +302,7 @@ def compile_plan(config, *, persist=True, client=None):
         response = client.post(
             "https://api.deepseek.com/chat/completions",
             headers={"Authorization": "Bearer " + secret},
-            timeout=90,
+            timeout=120,
             json={
                 "model": config["llm"]["model"],
                 "thinking": {"type": "disabled"},
@@ -210,7 +311,7 @@ def compile_plan(config, *, persist=True, client=None):
                     {"role": "user", "content": json.dumps(context)},
                 ],
                 "response_format": {"type": "json_object"},
-                "max_tokens": 6500,
+                "max_tokens": 9500,
             },
         )
         if response.status_code != 200:
@@ -283,6 +384,26 @@ def screen(listing, search, facts):
         return None
     if listing.model_year is None:
         return None
+    cc = listing.engine_cc
+    advert = listing.title + "\n" + listing.description
+    unusual = re.search(
+        r"two[- ]stroke|2[- ]stroke|race[- ](?:only|bike)|racing motorcycle|competition|grand prix|gp250|250[- ]gp|turbo|supercharg|big[- ]bore|engine[- ]swap|tuned engine|modified engine",
+        advert,
+        re.I,
+    )
+    if unusual:
+        return None
+    if cc:
+        for rule in plan.get("capacity_rules", []):
+            if 0 < cc <= rule["max_engine_cc"] and rule["power_hp_upper"] < minimum:
+                return {
+                    "fingerprint": plan["fingerprint"],
+                    "rule": rule["name"],
+                    "reason": rule["reason"],
+                    "estimated_power_hp_upper": rule["power_hp_upper"],
+                    "verified": False,
+                    "note": "Operational small-engine screening estimate; high-output and racing/modified exceptions remain for investigation. Visible in All tracked.",
+                }
     for rule in plan.get("rules", []):
         if (
             rule["year_min"] <= listing.model_year <= rule["year_max"]

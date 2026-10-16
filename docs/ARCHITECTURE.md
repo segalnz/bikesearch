@@ -85,9 +85,13 @@ expiry preserve the same plan until the requirements change. Acquisition applies
 screening before detail fetches; individual research handles the survivors.
 Model-family power ceilings remain labelled estimates, not fabricated facts.
 Literal aliases preserve identity suffixes, unknown models remain in discovery,
-and displacement-only rules cannot be expressed. The read-only dashboard loads
+and any ordinary-small-engine predicate is capped at 250 cc, with explicit
+high-output/racing/tuning exceptions. A blanket 650 cc cutoff cannot be expressed. The read-only dashboard loads
 the saved plan without API calls. A failed compiler leaves ordinary collection
-running.
+running. Positive candidate selection requires supported power or a promising model
+identity; unknown discoveries have a separate view and do not consume individual
+cloud research calls. This prevents an incomplete exclusion list from implicitly
+promoting every unrecognised listing into the shortlist.
 
 **Research documents before classifying missing specifications.** The separate
 `research` adapter discovers manufacturer sources, retrieves HTML/PDF documents and

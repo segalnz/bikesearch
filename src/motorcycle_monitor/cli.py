@@ -176,6 +176,10 @@ def main(argv: list[str] | None = None) -> int:
                 print(plan["summary"])
                 print("\nStored plan: " + plan["generated_at"])
                 print("Screening rules are LLM estimates, not verified specifications.")
+                for rule in plan.get("capacity_rules", []):
+                    print(
+                        f"  Screen ordinary stock engines up to {rule['max_engine_cc']} cc: estimated maximum {rule['power_hp_upper']:g} hp. Racing/tuned/high-output exceptions remain for investigation."
+                    )
                 for rule in plan["rules"]:
                     print(
                         f"  Screen out {rule['make']} {' / '.join(rule['models'])} ({rule['year_min']}–{rule['year_max']}): expected at most {rule['power_hp_upper']:g} hp. {rule['reason']}"

@@ -39,7 +39,10 @@ or invalid plan is generated once; a failed compilation falls back to ordinary
 collection and can be retried on a later scan. No paid planner calls occur when
 reading the dashboard or CLI.
 
-Rules use literal make/model aliases and bounded model years. There is **no blanket
+Rules use literal make/model aliases, bounded model years and conservative
+ordinary-small-engine estimates capped at 250 cc. Explicit high-power figures and
+racing/two-stroke/tuned/engine-swap clues bypass these estimates for investigation.
+There is **no blanket
 650 cc cutoff**: high-output 599/600/636 cc four-cylinder sports bikes survive unless
 another requirement excludes them. Priorities are not a whitelist; unfamiliar models
 remain eligible for research. Screening is applied before costly advert details,
@@ -47,6 +50,15 @@ model specification research and individual advisory calls. Indexed provider ada
 also use the plan's queries when enabled. Detailed research is reserved for remaining
 candidates, with an eight-call/120-second research budget and four advisory calls per
 scan in the preset.
+
+The main **Potential candidates** and **Needs review** views require positive
+selection: supported power at or above the minimum, or a promising model identity
+from the plan. Unknown, unlisted stock remains in **Unassessed discoveries**, not
+presented as a potential match. This preserves open discovery without flooding the
+shortlist with unassessed scooters, children's bikes or farm/trail machines.
+Unassessed records do not consume individual cloud research/advisory calls; detail
+acquisition can still discover positive evidence and promote a bike. Rejected
+records remain in **All tracked**. No stock/history is deleted.
 
 The dashboard's **Saved operational search plan** panel exposes the stored rules,
 priorities and cautions. `motorcycle-monitor --config /etc/motorcycle-monitor/config.yaml

@@ -11,6 +11,7 @@ from .normalization import canonical_url, mileage, money, safe_url
 from .parsers import ParseError, decorate, jsonld
 from .schema import Listing
 from .search_plan import preferred_model
+from .suitability import is_candidate
 
 VEHICLE_LINK = re.compile(
     r"/bike/|/used_bikes/show/|/products/|/vehicle/|/shop/bikes-in-store/|/motorcycles-scooters/Used-Motorbikes-for-Sale/[^/]+/[^/]+/\d+",
@@ -184,6 +185,7 @@ def collect_website(source, options, fetcher, config):
         result.values(),
         key=lambda x: (
             classify(x, config).classification == "REJECTED",
+            not is_candidate(x),
             not preferred_model(x, config["search"]),
             -x.evidence.get("suitability", {}).get("preference_matches", 0),
         ),

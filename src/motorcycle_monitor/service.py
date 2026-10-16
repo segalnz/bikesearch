@@ -13,6 +13,7 @@ from .ports import CandidateReviewer, PageFetcher
 from .scheduler import scan_lock
 from .schema import Listing
 from .storage import Store
+from .suitability import is_candidate
 
 log = logging.getLogger(__name__)
 
@@ -185,7 +186,7 @@ def _scan(
                             ),
                         ),
                     ):
-                        if listing.classification != "REJECTED":
+                        if is_candidate(listing):
                             researcher.research(listing)
                             classify(listing, config)
                 if reviewer:
@@ -200,7 +201,7 @@ def _scan(
                         ),
                     )
                     for listing in candidates:
-                        if listing.classification != "REJECTED":
+                        if is_candidate(listing):
                             reviewer.review(listing, config["search"])
                 partial = options.get("allow_partial", False)
                 if store:

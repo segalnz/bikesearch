@@ -24,7 +24,8 @@ const when = (value) =>
 const labels = {
   candidates: "Potential candidates",
   matches: "Available matches",
-  review: "Needs review",
+  review: "Candidates needing review",
+  unassessed: "Unassessed discoveries",
   unavailable: "Unavailable / uncertain",
   all: "All tracked listings",
 };
@@ -41,6 +42,9 @@ const el = (tag, cls, text) => {
   return node;
 };
 const relevant = (item) => item.classification !== "REJECTED";
+const candidate = (item) =>
+  relevant(item) &&
+  item.evidence?.suitability?.candidate_status !== "unassessed";
 const active = (item) => item.listing_status === "ACTIVE";
 function fact(label, value) {
   const node = el("div", "fact");
@@ -53,6 +57,8 @@ function availability(item) {
     return item.evidence?.availability?.status === "NOT_SEEN"
       ? "No longer seen available"
       : "Availability uncertain";
+  if (item.evidence?.suitability?.candidate_status === "unassessed")
+    return "Unassessed discovery";
   return item.classification === "REVIEW"
     ? "Needs review"
     : item.classification === "REJECTED"
@@ -347,6 +353,20 @@ function render() {
           ". Reused until your requirements change. Screening rules are LLM estimates; specifications remain separate.",
       ),
     );
+    for (const rule of plan.capacity_rules || [])
+      planContent.append(
+        el(
+          "p",
+          null,
+          "Small-engine screening: ordinary stock engines up to " +
+            rule.max_engine_cc +
+            " cc; estimated maximum " +
+            rule.power_hp_upper +
+            " hp. " +
+            rule.reason +
+            " Racing, modified and explicit high-output exceptions remain for investigation.",
+        ),
+      );
     for (const rule of plan.rules || [])
       planContent.append(
         el(
@@ -386,7 +406,8 @@ function render() {
     (item) => active(item) && item.classification === "ACCEPTED",
   ).length;
   document.querySelector("#count-review").textContent = listings.filter(
-    (item) => active(item) && item.classification === "REVIEW",
+    (item) =>
+      active(item) && candidate(item) && item.classification === "REVIEW",
   ).length;
   document.querySelector("#count-unavailable").textContent = listings.filter(
     (item) => !active(item) && relevant(item),
@@ -396,13 +417,17 @@ function render() {
   const visible = listings.filter(
     (item) =>
       (filter === "all" ||
-        (filter === "candidates" && active(item) && relevant(item)) ||
+        (filter === "candidates" && active(item) && candidate(item)) ||
         (filter === "matches" &&
           active(item) &&
           item.classification === "ACCEPTED") ||
         (filter === "review" &&
           active(item) &&
+          candidate(item) &&
           item.classification === "REVIEW") ||
+        (filter === "unassessed" &&
+          active(item) &&
+          item.evidence?.suitability?.candidate_status === "unassessed") ||
         (filter === "unavailable" && !active(item) && relevant(item))) &&
       (!query ||
         [

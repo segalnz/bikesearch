@@ -53,7 +53,7 @@ def build_demo(folder: Path) -> dict:
             (
                 3,
                 "2020 Example Four — needs specifications",
-                "Non-LAMS full power. Inline four. ABS. Exact wet weight, seat height and workshop support not supplied.",
+                "Non-LAMS full power. Inline four. ABS. 95 hp. Exact wet weight, seat height and workshop support not supplied.",
                 9500,
                 14000,
                 "Christchurch",
