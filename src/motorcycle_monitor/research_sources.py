@@ -50,7 +50,7 @@ def document_urls(listing):
             "mt07": "MT07",
             "mt09": "MT09",
             "xsr700": "XSR700",
-            "xsr900": "XSR900",
+            "xsr900": "XS850" if listing.model_year <= 2021 else "XSR900",
             "yzfr7": "YZF700",
             "tracer700": "MT07TR",
             "tracer900": "MT09TRA",
@@ -106,3 +106,55 @@ def indexed_claims(listing, documents):
                 }
             )
     return claims
+
+
+# Human-reviewed, exact-model-year manufacturer facts. These are specification
+# evidence, separate from the LLM's operational estimates. Keep the source and
+# quotation with every value; do not extrapolate across model generations.
+REVIEWED_SEAT_HEIGHTS = (
+    (
+        "Kawasaki",
+        ("Ninja ZX-6R", "ZX-6R"),
+        2026,
+        830,
+        "https://www.kawasaki.com.au/en-au/motorcycle/ninja/supersport/ninja-zx-6r/2026-ninja-zx-6r",
+        "Seat Height 830 mm",
+    ),
+    (
+        "Yamaha",
+        ("XSR900",),
+        2020,
+        830,
+        "https://cdn2.yamaha-motor.eu/prod/product-assets/2020/XS850/Factsheets/2020-XS850_en-GB.pdf",
+        "Seat height 830 mm",
+    ),
+)
+
+
+def reviewed_reference_facts(listing):
+    from .search_plan import model_matches
+
+    for make, aliases, year, height, url, quotation in REVIEWED_SEAT_HEIGHTS:
+        if listing.model_year == year and any(
+            model_matches(listing, make, alias) for alias in aliases
+        ):
+            text = listing.title + "\n" + listing.description
+            if re.search(
+                r"\b(?:lowered|lowering)\s+(?:seat|suspension|\d+\s*mm)|\b(?:seat|suspension)\s+(?:height\s+)?(?:lowered|lowering)|\blow[- ]seat\b|\blowering (?:kit|links)\b",
+                text,
+                re.I,
+            ):
+                return {}
+            return {
+                "seat_height_mm": {
+                    "value": height,
+                    "quotation": quotation,
+                    "source_url": url,
+                    "model_quote": make + " " + aliases[0],
+                    "year_quote": str(year),
+                    "kind": "manufacturer_research",
+                    "checked_at": "2026-10-16",
+                    "reviewed_reference": True,
+                }
+            }
+    return {}

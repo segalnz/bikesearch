@@ -76,6 +76,12 @@ specifications. A supported figure below 80 hp excludes a bike even when the adv
 omits power. `requirements.min_power_hp` controls this mandatory minimum. Conflicting
 higher seller claims do not override a lower researched stock figure.
 
+Exact-year manufacturer facts that have been reviewed are also applied directly,
+so known mandatory failures do not wait for another API lookup. Examples are the
+2026 ZX-6R and 2020 XSR900 factory seat heights of 830 mm. These facts carry their
+original manufacturer links and quotations, do not cross model years, and yield to
+uncertainty when an advert describes a lowered seat/suspension or conflicting height.
+
 The researcher uses public indexed document discovery and a checked archive index,
 then reads manufacturer HTML pages and PDF brochures. DeepSeek extracts structured
 facts; exact supporting quotations, model identity, year, units and source URLs

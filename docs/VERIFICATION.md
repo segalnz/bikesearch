@@ -6,7 +6,9 @@
 - The inventory audit found 280 machines of 250 cc or less among 615 review records. Replay through the corrected plan rejected all three Dio examples and left no ordinary small-engine machine in the positively selected group.
 - Operational plan schema 2 adds bounded ordinary-small-engine screening, preserves explicit high-output/racing/tuning exceptions, accepts specific named aliases such as Dio, discards unsafe generic family prefixes and removes contradictory priorities. The refreshed plan has 48 model-family rules and three bounded capacity predicates.
 - Potential candidates require supported horsepower or a promising model identity. Other discoveries are retained separately and consume no individual cloud research/advisory calls. Confirmed matches still require every mandatory fact.
-- 250 offline tests pass, including the reported Dio, unfamiliar small commuters, children's bikes, 600/636 cc sports-bike preservation, racing/high-output exceptions, named aliases and research-budget selection. Browser checks verified candidate/review/unassessed/all views, no JavaScript errors and mobile layout.
+- 256 offline tests pass, including the reported Dio, unfamiliar small commuters, children's bikes, 600/636 cc sports-bike preservation, racing/high-output exceptions, named aliases and research-budget selection. Browser checks verified candidate/review/unassessed/all views, no JavaScript errors and mobile layout.
+
+- A further audit of the positively selected models checked other hard limits. Official Kawasaki 2026 ZX-6R and Yamaha 2020 XSR900 specifications both state 830 mm seats, exceeding the configured 825 mm maximum. Exact-year reviewed references now reject these stock machines; lowered/changed-seat claims remain for review, and newer XSR900 generations are not affected.
 
 ## Reusable operational planning — 16 October 2026
 

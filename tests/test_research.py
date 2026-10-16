@@ -254,3 +254,45 @@ def test_uncached_source_budget_does_not_starve_later_scans(tmp_path, monkeypatc
     assert item.evidence["model_research"]["status"] == "unknown"
     researcher.close()
     later.close()
+
+
+@pytest.mark.parametrize(
+    "title,year", [("Kawasaki Ninja ZX6R 2026", 2026), ("Yamaha Xsr900 2020", 2020)]
+)
+def test_reviewed_seat_height_excludes_stock_shortlist_near_misses(
+    broad_config, title, year
+):
+    item = bike()
+    item.title = title
+    item.model_year = year
+    classify(item, broad_config)
+    assert item.classification == "REJECTED"
+    fact = item.evidence["suitability"]["facts"]["seat_height_mm"]
+    assert fact["value"] == 830 and fact["reviewed_reference"]
+    assert fact["source_url"].startswith("https://")
+    assert "Seat height exceeds maximum" in item.rejection_reasons
+
+
+@pytest.mark.parametrize(
+    "title,year",
+    [
+        ("Yamaha XSR900 2022", 2022),
+        ("Yamaha XSR900 2020", 2021),
+        ("Honda XSR900 2020", 2020),
+    ],
+)
+def test_reference_never_crosses_model_year_or_manufacturer(broad_config, title, year):
+    item = bike()
+    item.title = title
+    item.model_year = year
+    classify(item, broad_config)
+    assert "seat_height_mm" not in item.evidence["suitability"]["facts"]
+
+
+def test_modified_or_explicitly_lower_seat_requires_review(broad_config):
+    for claim in ["Lowered seat", "Seat height 800 mm", "Lowering links fitted"]:
+        item = bike()
+        item.title = "Yamaha XSR900 2020"
+        item.description = claim
+        classify(item, broad_config)
+        assert item.classification == "REVIEW"

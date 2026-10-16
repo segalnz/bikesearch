@@ -131,9 +131,24 @@ def classify_broad(listing, config):
         reject.append("ATV/quad/side-by-side is not a motorcycle candidate")
     text = listing.title + "\n" + listing.description
     facts = advert_facts(text)
-    research = listing.evidence.get("model_research", {})
+    from .research_sources import reviewed_reference_facts
+
+    researched_facts = reviewed_reference_facts(listing)
+    reference_conflicts = set()
+    for field, fact in (
+        listing.evidence.get("model_research", {}).get("facts", {}).items()
+    ):
+        if (
+            field in researched_facts
+            and researched_facts[field]["value"] != fact["value"]
+        ):
+            reference_conflicts.add(field)
+        researched_facts[field] = fact
+    for field in reference_conflicts:
+        researched_facts.pop(field)
+        unknown.append("Conflicting manufacturer specifications: " + field)
     conflicts = []
-    for field, fact in research.get("facts", {}).items():
+    for field, fact in researched_facts.items():
         if fact.get("kind") != "manufacturer_research" or not fact.get("source_url"):
             continue
         if field in facts and facts[field]["value"] != fact["value"]:
