@@ -1,5 +1,14 @@
 # Verification history
 
+## Manufacturer specification research — 16 October 2026
+
+- 202 offline tests pass, with Ruff lint/format and JavaScript syntax checks.
+- The broad preset now requires at least 80 mechanical hp. Underpowered advert or researched stock figures are rejected; missing power needs review. Higher conflicting seller claims cannot override a lower researched figure.
+- Live public acquisition of Kawasaki's 2020 Ninja brochure verified 50.2 kW / 67.32 hp for the Ninja 650 and deterministic rejection despite no advert horsepower. Checked table associations survive a supplemental model-extraction failure but require matching fetched source text.
+- Live Honda 2019 CBR650R manufacturer research extracted 70 kW / 93.87 hp, 207 kg kerb weight, 810 mm seat, four cylinders and standard ABS. The bike still needs workshop/DIY evidence rather than receiving invented confirmation.
+- Tests cover unsupported quotations, wrong years, arbitrary hosts, credentials in URLs, multi-model numerical ambiguity, kW/PS conversion, cached reuse, progressive source budgets and the exact 80 hp boundary.
+- Research reads bounded manufacturer HTML/PDF documents, has separate collection/API budgets and caches model/year findings. Source index coverage is partial; unavailable or unrecognized documents remain unknown.
+
 ## Broad search and showcase — 16 October 2026
 
 - 178 offline tests pass under Python 3.12; Ruff lint/format and JavaScript syntax checks pass.

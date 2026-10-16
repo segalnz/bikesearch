@@ -65,11 +65,13 @@ def test_weight_preference_is_strictly_under_210(broad_config, weight, status):
     assert item.classification == ("REJECTED" if weight > 225 else "ACCEPTED")
 
 
-def test_seat_and_power_preferences_do_not_exclude(broad_config):
+def test_seat_preference_and_mandatory_power(broad_config):
     item = machine(model_year=2017, odometer_km=25000)
     item.description = item.description.replace("810 mm", "825 mm").replace(
         "85 hp", "70 hp"
     )
+    assert classify(item, broad_config).classification == "REJECTED"
+    item.description = item.description.replace("70 hp", "80 hp")
     assert classify(item, broad_config).classification == "ACCEPTED"
     item.description = item.description.replace("825 mm", "826 mm")
     assert classify(item, broad_config).classification == "REJECTED"

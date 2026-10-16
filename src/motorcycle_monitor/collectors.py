@@ -3,6 +3,7 @@
 import hashlib
 import json
 import time
+from io import BytesIO
 from pathlib import Path
 from urllib.parse import parse_qsl, urlencode, urljoin, urlsplit, urlunsplit
 
@@ -109,9 +110,45 @@ class Fetcher:
                 if response.status_code != 200:
                     raise CollectionError(f"HTTP {response.status_code} for {current}")
                 content_kind = "text/html" if data is None else "application/json"
-                if content_kind not in response.headers.get("content-type", ""):
+                media_type = response.headers.get("content-type", "")
+                is_rss = (
+                    self.config.get("allow_research_rss", False)
+                    and urlsplit(current).hostname == "www.bing.com"
+                    and any(
+                        kind in media_type
+                        for kind in (
+                            "application/rss+xml",
+                            "text/xml",
+                            "application/xml",
+                        )
+                    )
+                )
+                is_pdf = (
+                    self.config.get("allow_research_pdf", False)
+                    and "application/pdf" in media_type
+                )
+                if content_kind not in media_type and not is_rss and not is_pdf:
                     raise CollectionError(f"Unexpected content type for {current}")
-                html = response.text
+                if len(response.content) > (15_000_000 if is_pdf else 5_000_000):
+                    raise CollectionError("Document exceeds acquisition size limit")
+                if is_pdf:
+                    from pypdf import PdfReader
+                    from pypdf.errors import PdfReadError
+
+                    try:
+                        document = PdfReader(BytesIO(response.content))
+                        if document.is_encrypted or len(document.pages) > 100:
+                            raise CollectionError(
+                                "Research PDF exceeds document limits"
+                            )
+                        html = "\n".join(
+                            page.extract_text(extraction_mode="layout")
+                            for page in document.pages
+                        )
+                    except PdfReadError:
+                        raise CollectionError("Unreadable research PDF") from None
+                else:
+                    html = response.text
                 if any(
                     marker in html.lower()
                     for marker in (
@@ -124,8 +161,6 @@ class Fetcher:
                     raise CollectionError(
                         "Public page presented a challenge; moving to other sources"
                     )
-                if len(response.content) > 5_000_000:
-                    raise CollectionError("Page exceeds 5 MB; narrow acquisition")
                 self.cache[cache_key] = html
                 # Cache only acquisition; parser failures are still explicit on each run.
                 if cache_file:

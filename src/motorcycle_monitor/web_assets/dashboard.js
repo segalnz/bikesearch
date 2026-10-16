@@ -155,6 +155,24 @@ function card(item) {
             (check.value == null ? "" : " (" + check.value + ")"),
         ),
       );
+    for (const [field, fact] of Object.entries(suitability.facts || {})) {
+      const row = el("p", null, field.replaceAll("_", " ") + ": " + fact.value + " — " + fact.quotation);
+      if (fact.source_url) {
+        try {
+          const url = new URL(fact.source_url);
+          if (url.protocol === "https:") {
+            const link = el("a", null, " Manufacturer source");
+            link.href = url.href;
+            link.target = "_blank";
+            link.rel = "noopener noreferrer";
+            row.append(link);
+          }
+        } catch { /* Invalid evidence links are not rendered. */ }
+      }
+      panel.append(row);
+    }
+    const research = item.evidence?.model_research;
+    if (research) panel.append(el("p", null, "Model research: " + research.status + ". " + research.note));
     panel.append(el("p", null, suitability.note));
     node.append(panel);
   }

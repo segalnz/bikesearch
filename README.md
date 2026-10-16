@@ -5,10 +5,10 @@ It monitors public Trade Me and dealer stock, preserves SQLite history and queue
 MQTT alerts. It runs in a Python virtualenv on an Ubuntu/Debian Proxmox LXC.
 
 The current `config.bike-search.yaml` searches all models: up to NZ$12,500,
-2017+, at most 25,000 km, twin/triple/four-cylinder, ABS, non-LAMS, wet weight at
+2017+, at most 25,000 km, **at least 80 hp**, twin/triple/four-cylinder, ABS, non-LAMS, wet weight at
 most 225 kg and seat height at most 825 mm. English workshop documentation and
 DIY servicing suitability require evidence. Preferences rank candidates: 2020+,
-under 15,000 km, at least 80 hp, **strictly under 210 kg wet**, seat at most 810 mm,
+under 15,000 km, **strictly under 210 kg wet**, seat at most 810 mm,
 factory screen/fairing, US-market models and Wellington/Lower North Island.
 Unknown mandatory facts go to review; auction bids never establish purchase price.
 
@@ -31,8 +31,10 @@ installation or live dealer access is needed.
 Eight independent dealer sites and two marketplaces feed a read-only dashboard.
 Collection is paced and bounded; failures stay visible, history survives restarts,
 and partial discovery never marks unseen bikes unavailable. A transactional MQTT
-outbox supports delivery retries. Optional DeepSeek guidance helps research
-uncertain candidates without overriding deterministic rules. Optional Brave or
+outbox supports delivery retries. Model/year research retrieves manufacturer HTML
+and PDF specifications, validates quoted facts and applies deterministic limits.
+Researched power under 80 hp excludes a bike even if its advert omits horsepower.
+Separate optional DeepSeek guidance helps investigate unresolved requirements. Optional Brave or
 Tavily indexed search needs its own provider key; direct dealer browsing does not.
 
 The code separates domain rules, application orchestration, acquisition adapters,
@@ -177,9 +179,9 @@ better financial result. CLI output identifies its ranking basis.
 model/parts sources while clearly marking unknown private-owner manual supply,
 aftermarket inventory, diagnostics, compatibility and landed costs. Replace or
 expand a memo using `model-support --import-file FILE` with JSON keyed by model,
-including `memo`, `sources` and `last_checked`. No research runs on routine scans.
-The optional ambiguity-review protocol is present; an LLM implementation is not
-included and configuration rejects enabling it.
+including `memo`, `sources` and `last_checked`. These legacy named-model memos are
+separate from the automatic manufacturer-document research in broad searches,
+which is controlled by `llm.research_enabled`.
 
 ## Ubuntu LXC deployment and upgrading
 

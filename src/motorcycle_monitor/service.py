@@ -94,6 +94,36 @@ def _scan(
             config["llm"],
             None if dry_run else Path(config["database"]["path"]).parent / "ai-cache",
         )
+    researcher = None
+    research_fetcher = None
+    if (
+        config["search"].get("mode") == "all_models"
+        and config["llm"].get("enabled")
+        and config["llm"].get("research_enabled")
+    ):
+        from .research import ModelResearcher
+
+        research_fetcher = Fetcher(
+            {
+                **config["collector"],
+                "max_requests": 60,
+                "max_retries": 0,
+                "request_interval_seconds": 2,
+                "request_timeout_seconds": 15,
+                "allow_research_rss": True,
+                "allow_research_pdf": True,
+            },
+            None
+            if dry_run
+            else Path(config["database"]["path"]).parent / "research-http-cache",
+        )
+        researcher = ModelResearcher(
+            config["llm"],
+            research_fetcher,
+            None
+            if dry_run
+            else Path(config["database"]["path"]).parent / "model-cache",
+        )
     try:
         imported = import_listings(import_file, config) if import_file else None
         if imported is not None:
@@ -123,6 +153,23 @@ def _scan(
                     else collect(name, options, fetcher, config)
                 )
                 listings = [classify(x, config) for x in listings]
+                if researcher:
+                    from .research_sources import document_urls
+
+                    researcher.source_attempts = 0
+                    for listing in sorted(
+                        listings,
+                        key=lambda x: (
+                            not bool(document_urls(x)),
+                            x.power_status != "UNRESTRICTED",
+                            -x.evidence.get("suitability", {}).get(
+                                "preference_matches", 0
+                            ),
+                        ),
+                    ):
+                        if listing.classification != "REJECTED":
+                            researcher.research(listing)
+                            classify(listing, config)
                 if reviewer:
                     candidates = sorted(
                         listings,
@@ -233,6 +280,10 @@ def _scan(
                     "MQTT delivery failed; event retained for retry"
                 )
     finally:
+        if researcher:
+            researcher.close()
+        if research_fetcher:
+            research_fetcher.close()
         if owned_reviewer and reviewer:
             reviewer.close()
         if owned_fetcher:

@@ -148,6 +148,18 @@ def validate(config: dict) -> None:
         raise ValueError("Only max_concurrency: 1 is supported")
     if config["collector"]["mode"] not in {"http", "auto"}:
         raise ValueError("Only HTTP acquisition is implemented")
+    if config["llm"].get("research_enabled", False):
+        if not config["llm"]["enabled"]:
+            raise ValueError("Model research requires llm.enabled")
+        for key, maximum in [
+            ("research_calls_per_scan", 100),
+            ("research_seconds", 600),
+        ]:
+            value = config["llm"].get(
+                key, 24 if key == "research_calls_per_scan" else 240
+            )
+            if type(value) is not int or not 1 <= value <= maximum:
+                raise ValueError(f"llm.{key} outside supported budget")
     if config["llm"]["enabled"]:
         seconds = config["llm"].get("max_review_seconds", 180)
         if type(seconds) not in {int, float} or not 1 <= seconds <= 600:
@@ -300,6 +312,13 @@ def _validate_broad(search):
             value = mapping.get(key)
             if type(value) not in {int, float} or value <= 0:
                 raise ValueError(f"{key} must be a positive number")
+    minimum = requirements.get("min_power_hp")
+    if minimum is not None and (
+        type(minimum) not in {int, float} or not 0 < minimum < 1000
+    ):
+        raise ValueError(
+            "requirements.min_power_hp must be a positive horsepower limit"
+        )
     if search["max_price_nzd"] is None:
         raise ValueError("Broad search needs a price ceiling")
     if requirements.get("cylinders") != [2, 3, 4]:

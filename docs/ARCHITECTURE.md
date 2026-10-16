@@ -11,6 +11,8 @@ flowchart LR
     Scan --> Sources[Public acquisition adapters]
     Sources --> Sites[Dealer sites / marketplaces / optional search API]
     Scan --> Rules[Deterministic eligibility and preference rules]
+    Scan --> Research[Manufacturer document research and quote validation]
+    Research --> Rules
     Scan --> AI[Optional DeepSeek advisory reviewer]
     Scan --> Store[SQLite history and transactional outbox]
     Store --> MQTT[MQTT publisher with retry]
@@ -26,6 +28,7 @@ flowchart LR
 | Domain | `schema`, `normalization`, `classification`, `filtering`, `suitability`, `trade_in` | Evidence, eligibility, preferences and monetary calculations; no network or database calls |
 | Application | `service`, `scheduler`, `ports` | Scan lifecycle, locks, sequencing, resource ownership and injected adapter contracts |
 | Acquisition adapters | `collectors`, `parsers`, `dealers`, `browser`, `web_discovery`, `search` | Public HTTP/browser access and source-specific interpretation |
+| Model research | `research`, `research_sources` | Manufacturer document discovery, bounded HTML/PDF acquisition, quoted structured extraction and model/year caching |
 | Advisory adapter | `reviewer`, `secrets` | Bounded DeepSeek requests, validation, caching and isolated credential loading |
 | Persistence/delivery | `storage`, `notifications` | Versioned SQLite storage, observations, source availability and MQTT outbox |
 | Presentation | `cli`, `presentation`, `web`, `web_assets` | Human-readable CLI and read-only LAN UI; no scan-triggering endpoints |
@@ -71,6 +74,15 @@ call limit, bounded payloads, a timeout, strict response/quotation validation an
 content/criteria/model-version caching. A failed review does not erase a listing
 or stop deterministic collection. It cannot execute commands, browse arbitrary
 URLs or change eligibility.
+
+**Research documents before classifying missing specifications.** The separate
+`research` adapter discovers manufacturer sources, retrieves HTML/PDF documents and
+uses DeepSeek for structured extraction. Numeric units, exact quotations, model/year
+identity and source hosts are validated before facts enter the deterministic policy.
+Model memory is not evidence. Low researched power excludes a candidate; unresolved
+or conflicting mandatory facts remain visible for review. Research has independent
+HTTP/API budgets and model/year caching, so it cannot consume the inventory request
+budget. Source locations are kept separate from policy thresholds.
 
 **Use SQLite and a transactional outbox.** A single writer/scan lock and WAL
 support consistent snapshots while the dashboard reads. Listing changes and

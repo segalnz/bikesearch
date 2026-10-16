@@ -10,7 +10,7 @@ Edit `config.bike-search.yaml`, then redeploy from the desktop with
 | Model year | 2017 onward | 2020 onward |
 | Mileage | Up to 25,000 km inclusive | Strictly under 15,000 km |
 | Engine | Two, three or four cylinders | — |
-| Power | Confirmed non-LAMS; exclude converted/conflicting LAMS adverts | At least 80 hp |
+| Power | **At least 80 hp** and confirmed non-LAMS; exclude converted/conflicting LAMS adverts | — |
 | Wet weight | Up to 225 kg | **Strictly under 210 kg** |
 | Seat height | Up to 825 mm | Up to 810 mm |
 | ABS | Mandatory | — |
@@ -25,12 +25,38 @@ never substitute for wet weights. Preferences order candidates, with financial
 comparison next. Missing preferences do not exclude bikes. Missing mandatory
 facts produce **Needs review**, with a reason for each outstanding check.
 
-Current automated factual extraction uses explicit advert wording. Model names
-alone do not establish ABS, wet weight, seat height, unrestricted power or workshop
-support. Seller claims require confirmation of the exact year/NZ variant. This
-means many plausible bikes initially need review; the application does not invent
-specifications to produce more confirmed matches. US-market status remains
-unconfirmed unless researched; AI discussion is separate from verified evidence.
+Advert extraction is supplemented by model/year research from fetched manufacturer
+specifications. A supported figure below 80 hp excludes a bike even when the advert
+omits power. `requirements.min_power_hp` controls this mandatory minimum. Conflicting
+higher seller claims do not override a lower researched stock figure.
+
+The researcher uses public indexed document discovery and a checked archive index,
+then reads manufacturer HTML pages and PDF brochures. DeepSeek extracts structured
+facts; exact supporting quotations, model identity, year, units and source URLs
+are checked before deterministic filtering. kW and metric PS are converted to
+mechanical hp. Dry weights and restricted-output quotations cannot supply ordinary
+wet weight or full-power values. The dashboard shows the facts and source links
+under **Requirements & preferences**.
+
+Research covers power, cylinders, ABS, wet weight, seat height, fairing, US sale,
+workshop documentation and DIY suitability when supported by documents. An owner's
+handbook does not establish workshop-manual availability. Actual NZ variant,
+modifications and condition still need confirmation; model research does not infer
+non-LAMS status from the model name. Unsupported facts remain unknown, with explicit
+review reasons. The archive index is a source-location aid, not an exhaustive model
+catalogue. Public index challenges, irrelevant results and unavailable archives can
+leave models unresolved.
+
+The preset allows 32 research API calls and 300 seconds for the research stage (including retrieval) per scan,
+with 60 separate paced HTTP requests for research. Collection retains its own
+request budget. Results are cached by model-title identity, year and engine size
+in `model-cache`: supported findings for 30 days, unresolved findings for seven days.
+Up to four uncached models per source are researched in each scan, prioritizing
+known document locations. Cached unresolved lookups let later scans advance to
+other models. Repeated bikes reuse findings; budget exhaustion leaves research pending for a
+later scan. Set `llm.research_enabled: false` to disable this stage. No additional
+search-service credential is needed for public RSS discovery; its results are
+only leads, never specification evidence.
 
 ## Public search coverage
 
@@ -71,7 +97,7 @@ manual availability never automatically satisfy a mandatory requirement. Quoted
 advert passages must exactly match the supplied advert; unsupported quotations
 are removed from the advisory, and malformed candidate responses are isolated. AI cannot override deterministic exclusions.
 
-At most 16 calls and 180 cumulative API seconds are allowed per scan. Unchanged advert/criteria/model combinations
+The preset allows at most 8 advisory calls and 180 cumulative API seconds are allowed per scan. Unchanged advert/criteria/model combinations
 reuse `/var/lib/motorcycle-monitor/ai-cache`; changed adverts or preferences get
 new reviews. Credential/API connection errors stop further review calls for that scan; a
 malformed candidate response affects only that candidate. Both leave collection
@@ -84,7 +110,7 @@ deployer extracts only the DeepSeek key and never transfers the GitHub key. It n
 enters the application archive. Broad-preset redeployment transfers it separately
 over SSH and installs `/etc/motorcycle-monitor/deepseek.token` as root, group
 `motorcycle-monitor`, mode 0640. No credentials enter prompts, logs or dashboard
-responses. Only public advert text and requirements are submitted to DeepSeek.
+responses. Only public advert/model details, requirements and fetched public specification excerpts are submitted to DeepSeek.
 Alternatively set `DEEPSEEK_API_KEY` in the service environment. Keep Python and
 all package installation inside the LXC virtualenv as before.
 

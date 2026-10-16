@@ -131,6 +131,35 @@ def classify_broad(listing, config):
         reject.append("ATV/quad/side-by-side is not a motorcycle candidate")
     text = listing.title + "\n" + listing.description
     facts = advert_facts(text)
+    research = listing.evidence.get("model_research", {})
+    conflicts = []
+    for field, fact in research.get("facts", {}).items():
+        if fact.get("kind") != "manufacturer_research" or not fact.get("source_url"):
+            continue
+        if field in facts and facts[field]["value"] != fact["value"]:
+            conflicts.append(field)
+            if field == "power_hp":
+                # Either the seller's claim or the stock manufacturer's figure
+                # below the minimum is sufficient to exclude this candidate.
+                facts[field] = min(
+                    (facts[field], fact), key=lambda record: record["value"]
+                )
+            else:
+                facts.pop(field)
+        else:
+            facts[field] = fact
+    unknown.extend("Advert/model research conflict: " + field for field in conflicts)
+    minimum_power = requirements.get("min_power_hp")
+    if minimum_power is not None:
+        horsepower = facts.get("power_hp", {}).get("value")
+        if horsepower is None:
+            unknown.append(
+                f"At least {minimum_power:g} hp mandatory; power unconfirmed"
+            )
+        elif horsepower < minimum_power:
+            reject.append(
+                f"Power {horsepower:g} hp below required {minimum_power:g} hp"
+            )
     listing.power_status, listing.power_evidence = power(listing)
     # Explicit LAMS in either title or description always excludes in this search,
     # including adverts claiming conversion or contradicting themselves.
@@ -250,7 +279,11 @@ def classify_broad(listing, config):
         facts.get("weather_protection", {}).get("value"),
         facts.get("weather_protection", {}).get("value") is True,
     )
-    preference("Model sold in USA", None, False)
+    preference(
+        "Model sold in USA",
+        facts.get("us_market", {}).get("value"),
+        facts.get("us_market", {}).get("value") is True,
+    )
     location = listing.location
     preference(
         "Wellington / Lower North Island",
@@ -271,7 +304,7 @@ def classify_broad(listing, config):
             item["status"] == "preferred" for item in assessments
         ),
         "evaluated_at": utc_now(),
-        "note": "Advert claims only. Missing specifications are unknown; AI suggestions are not verified evidence.",
+        "note": "Advert claims and quoted manufacturer model research. Missing or conflicting specifications require review; advisory AI suggestions do not establish eligibility.",
     }
     return listing
 
@@ -303,6 +336,8 @@ def describe_search(search: dict) -> list[str]:
     if broad:
         required = search["requirements"]
         preferred = search["preferences"]
+        if required.get("min_power_hp") is not None:
+            parts.append(f"At least {required['min_power_hp']:g} hp mandatory")
         if required["abs"]:
             parts.append("ABS mandatory")
         parts.extend(
