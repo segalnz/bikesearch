@@ -10,6 +10,9 @@
 
 - A further audit of the positively selected models checked other hard limits. Official Kawasaki 2026 ZX-6R and Yamaha 2020 XSR900 specifications both state 830 mm seats, exceeding the configured 825 mm maximum. Exact-year reviewed references now reject these stock machines; lowered/changed-seat claims remain for review, and newer XSR900 generations are not affected.
 
+- Final release `0.3.3`, deployment `edf670135a9e`, completed its fresh scan across all ten sources. The installer verified 0 confirmed available matches, 5 potential listings needing review and 343 unassessed active discoveries. The live browser verified that Dio records are rejected, not simply moved to unassessed; the 2020 XSR900 shows the sourced 830 mm seat-height rejection.
+- [Correction CI](https://github.com/segalnz/bikesearch/actions/runs/38859058814) passed all 256 tests on Python 3.11–3.13. Live desktop/mobile checks passed without JavaScript errors or horizontal overflow. The stored schema-2 plan retained its generation timestamp across the final deployment.
+
 ## Reusable operational planning — 16 October 2026
 
 - 227 offline tests pass. Planning tests cover one-call compilation, reuse after restart, criteria-based invalidation, model/variant boundaries, no capacity-only rule, deterministic evidence overriding estimates and a cloud-free dashboard read.
